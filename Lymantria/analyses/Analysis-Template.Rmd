@@ -1,0 +1,118 @@
+---
+title: "Analysis Template"
+author: ""
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+graphics: yes
+output:
+  github_document:
+    toc: yes
+  html_document:
+    keep_md: yes
+    theme: readable
+  html_notebook:
+    code_folding: hide
+    theme: readable
+editor_options:
+  chunk_output_type: console  
+---
+
+```{r setup, include = F}
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@ Knitr Options
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Set root directory to the project directory
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+
+
+# Set default knitr options: 
+# Suppress warnings and messages, cache chunks, 
+#  set default figure size to 6x8 at 300 dpi, and save a png and pdf
+knitr::opts_chunk$set(warning = F, message = F, collapse = T, cache = T,
+    fig.height = 6, fig.width = 8, dpi = 300, # 6x8" @ 300dpi:1800x2400=4.3MP
+    dev = c('png', 'pdf'), dev.args = list(pdf = list(onefile = F)))
+
+```
+
+
+
+### Overview
+
+What is this analysis about?
+
+```{r Main_Code, include = F, cache = F}
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@ Setup - This code is run, but output is hidden
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Load Packages
+require(tidyverse) # Needed for data wrangling: dplyr, tidyr, ggplot2
+require(cowplot) # Needed for publication-quality ggplots
+
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@ Data Preparation
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Import datasets
+#data <- read.csv("data/file.csv")
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@ ggPlot Theme
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ggplot.theme <- theme(
+    
+    # Text size for axis ticks
+    axis.text.y = element_text(size = 14),
+    axis.text.x = element_text(size = 14),
+    
+    # Text size for axis labels
+    # Also move them away from the axes a bit for more space
+    axis.title.x = element_text(size = 18, face = "bold", vjust = -1),
+    axis.title.y = element_text(size = 18, face = "bold", vjust = 1.5),
+    
+    # Plot title size
+    plot.title = element_text(size = 20, face = "bold"),
+    
+    # Margins for top, right, bottom, left
+    plot.margin = grid::unit(c(1.5, 1.5, 1.5, 1.2), "lines"), 
+    
+    # Legend text size
+    legend.text = element_text(size = 14),
+    legend.text.align = 0, 
+    legend.title = element_text(size = 16, face = "bold"),
+    legend.key.size = grid::unit(1.4, "line"),
+    legend.key = element_blank()
+    )
+
+
+```
+
+
+```{r Data_Wrangling, echo = F, comment = ""}
+
+# Put data wrangling code here
+
+```
+
+
+```{r Graph_name, echo = F}
+
+# Put each graph in a separate code block with a different name
+
+```
+
+
+### Session Information
+
+```{r Session_Info, echo = F, comment = ""}
+
+# Add session information to help with reproduceability
+sessionInfo()
+
+
+```
+
+
