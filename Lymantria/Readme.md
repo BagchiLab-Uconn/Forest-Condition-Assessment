@@ -7,4 +7,5 @@ Analyzing *Lymantria dispar* population patterns and mortality from Burlap Trap 
 * Use the [analysis template](analyses/Analysis-Template.Rmd) in analyses/ as a starting point.
 
 #### List of Analyses:
-* [Lymantria Death](analyses/Lymantria-Death.md) - An analysis of pathogen mortality rates for *Lymantria*
+* [Lymantria Mortality](analyses/Lymantria-Death.md) - An analysis of pathogen mortality rates for *Lymantria*
+* [Landsat Defoliation](analyses/Lymantria-Defoliation.md) - An analysis exploring the interactions between Landsat defoliation data from Val Pasquarella and our *Lymantria* abundance and mortality data.
