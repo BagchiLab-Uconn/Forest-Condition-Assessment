@@ -1,6 +1,6 @@
 ---
 title: "CT Defoliation Model Comparison"
-author: "James Mickley"
+author: "James Mickley and Audrey Barker Plotkin"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 graphics: yes
 output:
@@ -102,9 +102,29 @@ write.csv(burlap, file = "data/burlap-surveys.csv", row.names = F)
 
 ## Overview
 
+
+This analysis compares Val Pasquarella's defoliation data from Landsat satellite to 
+
+Here, we examine how varying the following components of the Landsat change-in-condition model affect how well that predicts defoliation on the ground:
+* Spectral index (TGC, NDVI, SR, EVI)
+* Baseline period (2000-2010, 2005-2015)
+* Harmonic periods (12- and -6 month, 12- and 4-month)
+* Data included (all available data which varies over time, consistent 16d interval)
+
+We evaluate the predictive ability of the following:
+* Landsat condition scores predicting larval Lymantria abundance
+* Landsat condition scores predicting Lymantria egg mass abundance
+* Egg mass abundance predicting larval Lymantria abundance
+
 ### Summary of Results
 
-* 
+* For both larval abundance and egg masses, the baseline sr_2000_2010_h13_16d is the best predictor
+* All of the best models are SR (top 6 models). NDVI does
+* Condition score can account for 58-67% of the variation in larval abundance and 6-32% of the variation in egg masses
+* By comparison, egg masses only predict 55% of the variation in larval abundance, and condition scores outperform it as a predictor. 
+* Predictive ability of Landsat condition scores weakens in 2018, the non-outbreak year, but there is still a pattern.
+* Egg masses only predict larval abundance during the outbreak, no relationship in 2018
+
 
 
 
@@ -132,7 +152,15 @@ library(knitr) # Needed for kable()
 
 # Import datasets
 burlap <- read.csv("data/burlap-surveys.csv")
-mean.scores <- read.csv("data/ct-mean-scores.csv")
+
+# Read in mean condition scores for 2017
+scores.2017 <- read.csv("data/plots_ct_burlap_2017_v2-2.csv") %>%
+    setNames(str_remove(names(.), '_201\\d_05_01_201\\d_09_30'))
+
+# Read in mean condtion scores for 2018
+scores.2018 <- read.csv("data/plots_ct_burlap_2018_v2-2.csv") %>%
+     setNames(str_remove(names(.), '_201\\d_05_01_201\\d_09_30'))
+
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # @@@@@ ggPlot Theme
@@ -245,9 +273,19 @@ augment.conf <- function(data, model, level = 0.95) {
 
 ```{r Data_Wrangling, echo = F, comment = ""}
 
+# Combine the mean condition scores from 2017 and 2018
+mean.scores <- scores.2017 %>%
+  
+    # Add 2018 scores
+    rbind(scores.2018) %>%
+  
+    # Convert year to a factor for the defoliation dataset
+    mutate(Year = as.character(Year)) %>%
+  
+    # Remove extraneous columns
+    select(-system.index, -Block, -BlockID, -Site, -SiteID, - FragSize, 
+        -Hunted, -SizeClass, -.geo)
 
-# Convert year to a factor for the defoliation dataset
-mean.scores <- mean.scores %>% mutate(year = as.character(year)) %>% rename(Year = year)
 
 # Wrangle the data
 ly <- burlap %>% 
@@ -324,8 +362,8 @@ str(ly.comb)
 sr.pred <- expand.grid(
     
     # Range of scoresfrom the CT data, adjust as needed
-    #range(ly.comb$m_sr_2000.2010_h13_16d)
-    m_sr_2000.2010_h13_16d = seq(-2.6, 2.9, by = 0.25),
+    #range(ly.comb$m_sr_2000_2010_h13_16d)
+    m_sr_2000_2010_h13_16d = seq(-2.6, 2.9, by = 0.25),
     
     # Set the two years
     Year = c("2017", "2018"),
@@ -337,8 +375,8 @@ sr.pred <- expand.grid(
 tcg.pred <- expand.grid(
   
     # Range of scores from the CT data, adjust as needed
-    #range(ly.comb$m_tcg_2000.2010_h13_full)
-    m_tcg_2000.2010_h13_full = seq(-3, 2.25, by = 0.25),
+    #range(ly.comb$m_tcg_2000_2010_h13_full)
+    m_tcg_2000_2010_h13_full = seq(-3, 2.25, by = 0.25),
     
     # Set the two years
     Year = c("2017", "2018"),
@@ -361,9 +399,6 @@ model.scores <- ly.comb %>%
 
     # Select all the columns that start with score_
     select(starts_with("m_")) %>% 
-    
-    # This model would need to be run separately, only for 2017
-    select(-m_paper) %>%
 
     # Get the column names
     names()
@@ -476,19 +511,19 @@ r2.burlap %>%
 
 ### Plots from Top Baselines
 
-#### sr_2000.2010_h13_16d
+#### sr_2000-2010_h13_16d
 
 
 ```{r Burlap_sr_Param, echo = F, comment = ""}
 
 # Plot fixed effects
-burlap.sr.param <- plot_model(burlapmodels[['m_sr_2000.2010_h13_16d']], 
+burlap.sr.param <- plot_model(burlapmodels[['m_sr_2000_2010_h13_16d']], 
     type = "est", show.values = T, show.p = T, vline.color = "gray60", 
     transform = NULL, value.offset = 0.2, , 
     axis.labels = c("Score:Year 2018", "Year 2018", "Score")) + 
     
     # Add title, axis label
-    labs(y = "Parameter Estimate", title = "Baseline: sr_2000.2010_h13_16d") +
+    labs(y = "Parameter Estimate", title = "Baseline: sr_2000-2010_h13_16d") +
 
     # Add theme
     ggplot.theme
@@ -507,17 +542,17 @@ burlap.sr.param
 burlap.sr <- sr.pred %>%
   
     # Augment with fitted values and confidence intervals
-    augment.conf(burlapmodels[['m_sr_2000.2010_h13_16d']])
+    augment.conf(burlapmodels[['m_sr_2000_2010_h13_16d']])
 
 
 # Make a prediction plot for sr
-burlap.sr.pred <- burlapmodels[['m_sr_2000.2010_h13_16d']] %>%
+burlap.sr.pred <- burlapmodels[['m_sr_2000_2010_h13_16d']] %>%
   
     # Augment the actual data, adding fitted values and residuals
     augment(type.predict = "response") %>%
     
     # Plot defoliation against model fitted values of abundance
-    ggplot(aes(x = m_sr_2000.2010_h13_16d, y = .fitted, color = Year)) +
+    ggplot(aes(x = m_sr_2000_2010_h13_16d, y = .fitted, color = Year)) +
       
         # Add model prediction trend line and 95% confidence intervals
         geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
@@ -535,7 +570,7 @@ burlap.sr.pred <- burlapmodels[['m_sr_2000.2010_h13_16d']] %>%
         
         # Add axis labels
         labs(x = "Defoliation Score", y = "Fitted Larval Abundance", 
-            title = "Baseline: sr_2000.2010_h13_16d") +
+            title = "Baseline: sr_2000-2010_h13_16d") +
     
         # Put legend inside the plot panel
         theme(legend.position = c(0.8, 0.8)) +
@@ -563,24 +598,24 @@ ggdraw() +
     draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
   
     # Add title
-    draw_plot_label("Baseline: sr_2000.2010_h13_16d", 0.1, 1, size = 20)
+    draw_plot_label("Baseline: sr_2000-2010_h13_16d", 0.1, 1, size = 20)
 
 
 ```
 
-#### tcg_2000.2010_h13_full
+#### tcg_2000-2010_h13_full
 
 
 ```{r Burlap_tcg_Param, echo = F, comment = ""}
 
 # Plot fixed effects
-burlap.tcg.param <- plot_model(burlapmodels[['m_tcg_2000.2010_h13_full']], 
+burlap.tcg.param <- plot_model(burlapmodels[['m_tcg_2000_2010_h13_full']], 
     type = "est", show.values = T, show.p = T, vline.color = "gray60", 
     transform = NULL, value.offset = 0.2, , 
     axis.labels = c("Score:Year 2018", "Year 2018", "Score")) + 
     
     # Add title, axis label
-    labs(y = "Parameter Estimate", title = "Baseline: tcg_2000.2010_h13_full") +
+    labs(y = "Parameter Estimate", title = "Baseline: tcg_2000-2010_h13_full") +
 
     # Add theme
     ggplot.theme
@@ -599,17 +634,17 @@ burlap.tcg.param
 burlap.tcg <- tcg.pred %>%
     
     # Augment with fitted values and confidence intervals
-    augment.conf(burlapmodels[['m_tcg_2000.2010_h13_full']])
+    augment.conf(burlapmodels[['m_tcg_2000_2010_h13_full']])
 
 
 # Make a prediction plot for sr
-burlap.tcg.pred <- burlapmodels[['m_tcg_2000.2010_h13_full']] %>%
+burlap.tcg.pred <- burlapmodels[['m_tcg_2000_2010_h13_full']] %>%
   
     # Augment the actual data, adding fitted values and residuals
     augment(type.predict = "response") %>%
     
     # Plot defoliation against model fitted values of abundance
-    ggplot(aes(x = m_tcg_2000.2010_h13_full, y = .fitted, color = Year)) +
+    ggplot(aes(x = m_tcg_2000_2010_h13_full, y = .fitted, color = Year)) +
       
         # Add model prediction trend line and 95% confidence intervals
         geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
@@ -627,7 +662,7 @@ burlap.tcg.pred <- burlapmodels[['m_tcg_2000.2010_h13_full']] %>%
   
         # Add axis labels
         labs(x = "Defoliation Score", y = "Fitted Larval Abundance", 
-            title = "Baseline: tcg_2000.2010_h13_full") +
+            title = "Baseline: tcg_2000-2010_h13_full") +
     
         # Put legend inside the plot panel
         theme(legend.position = c(0.8, 0.8)) +
@@ -656,7 +691,7 @@ ggdraw() +
     draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
   
     # Add title
-    draw_plot_label("Baseline: tcg_2000.2010_h13_full", 0.1, 1, size = 20)
+    draw_plot_label("Baseline: tcg_2000-2010_h13_full", 0.1, 1, size = 20)
 
 
 ```
@@ -759,19 +794,19 @@ r2.egg %>%
 
 ### Plots from Top Baselines
 
-#### sr_2000.2010_h13_16d
+#### sr_2000-2010_h13_16d
 
 
 ```{r Egg_sr_Param, echo = F, comment = ""}
 
 # Plot fixed effects
-egg.sr.param <- plot_model(eggmodels[['m_sr_2000.2010_h13_16d']], 
+egg.sr.param <- plot_model(eggmodels[['m_sr_2000_2010_h13_16d']], 
     type = "est", show.values = T, show.p = T, vline.color = "gray60", 
     transform = NULL, value.offset = 0.2, , 
     axis.labels = c("Score:Year 2018", "Year 2018", "Score")) + 
     
     # Add title, axis label
-    labs(y = "Parameter Estimate", title = "Baseline: sr_2000.2010_h13_16d") +
+    labs(y = "Parameter Estimate", title = "Baseline: sr_2000-2010_h13_16d") +
 
     # Add theme
     ggplot.theme
@@ -790,17 +825,17 @@ egg.sr.param
 egg.sr <- sr.pred %>%
     
     # Augment with fitted values and confidence intervals
-    augment.conf(eggmodels[['m_sr_2000.2010_h13_16d']])
+    augment.conf(eggmodels[['m_sr_2000_2010_h13_16d']])
 
 
 # Make a prediction plot for sr
-egg.sr.pred <- eggmodels[['m_sr_2000.2010_h13_16d']] %>%
+egg.sr.pred <- eggmodels[['m_sr_2000_2010_h13_16d']] %>%
   
     # Augment the actual data, adding fitted values and residuals
     augment(type.predict = "response") %>%
     
     # Plot defoliation against model fitted values of abundance
-    ggplot(aes(x = m_sr_2000.2010_h13_16d, y = .fitted, color = Year)) +
+    ggplot(aes(x = m_sr_2000_2010_h13_16d, y = .fitted, color = Year)) +
       
         # Add model prediction trend line and 95% confidence intervals
         geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
@@ -818,7 +853,7 @@ egg.sr.pred <- eggmodels[['m_sr_2000.2010_h13_16d']] %>%
         
         # Add axis labels
         labs(x = "Defoliation Score", y = "Fitted Egg Masses", 
-            title = "Baseline: sr_2000.2010_h13_16d") +
+            title = "Baseline: sr_2000-2010_h13_16d") +
     
         # Put legend inside the plot panel
         theme(legend.position = c(0.8, 0.8)) +
@@ -846,24 +881,24 @@ ggdraw() +
     draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
   
     # Add title
-    draw_plot_label("Baseline: sr_2000.2010_h13_16d", 0.1, 1, size = 20)
+    draw_plot_label("Baseline: sr_2000-2010_h13_16d", 0.1, 1, size = 20)
 
 
 ```
 
-#### tcg_2000.2010_h13_full
+#### tcg_2000-2010_h13_full
 
 
 ```{r Egg_tcg_Param, echo = F, comment = ""}
 
 # Plot fixed effects
-egg.tcg.param <- plot_model(eggmodels[['m_tcg_2000.2010_h13_full']], 
+egg.tcg.param <- plot_model(eggmodels[['m_tcg_2000_2010_h13_full']], 
     type = "est", show.values = T, show.p = T, vline.color = "gray60", 
     transform = NULL, value.offset = 0.2, , 
     axis.labels = c("Score:Year 2018", "Year 2018", "Score")) + 
     
     # Add title, axis label
-    labs(y = "Parameter Estimate", title = "Baseline: tcg_2000.2010_h13_full") +
+    labs(y = "Parameter Estimate", title = "Baseline: tcg_2000-2010_h13_full") +
 
     # Add theme
     ggplot.theme
@@ -882,17 +917,17 @@ egg.tcg.param
 egg.tcg <- tcg.pred %>%
     
     # Augment with fitted values and confidence intervals
-    augment.conf(eggmodels[['m_tcg_2000.2010_h13_full']])
+    augment.conf(eggmodels[['m_tcg_2000_2010_h13_full']])
 
 
 # Make a prediction plot for sr
-egg.tcg.pred <- eggmodels[['m_tcg_2000.2010_h13_full']] %>%
+egg.tcg.pred <- eggmodels[['m_tcg_2000_2010_h13_full']] %>%
   
     # Augment the actual data, adding fitted values and residuals
     augment(type.predict = "response") %>%
     
     # Plot defoliation against model fitted values of abundance
-    ggplot(aes(x = m_tcg_2000.2010_h13_full, y = .fitted, color = Year)) +
+    ggplot(aes(x = m_tcg_2000_2010_h13_full, y = .fitted, color = Year)) +
       
         # Add model prediction trend line and 95% confidence intervals
         geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
@@ -910,7 +945,7 @@ egg.tcg.pred <- eggmodels[['m_tcg_2000.2010_h13_full']] %>%
   
         # Add axis labels
         labs(x = "Defoliation Score", y = "Fitted Egg Masses", 
-            title = "Baseline: tcg_2000.2010_h13_full") +
+            title = "Baseline: tcg_2000-2010_h13_full") +
     
         # Put legend inside the plot panel
         theme(legend.position = c(0.8, 0.8)) +
@@ -939,7 +974,7 @@ ggdraw() +
     draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
   
     # Add title
-    draw_plot_label("Baseline: tcg_2000.2010_h13_full", 0.1, 1, size = 20)
+    draw_plot_label("Baseline: tcg_2000-2010_h13_full", 0.1, 1, size = 20)
 
 
 ```
@@ -962,10 +997,10 @@ m_egg.pred <- glmmTMB(Abundance ~ EggMasses * Year + (1|BlockID/SiteID),
 ```{r Egg_Predictor_AIC, echo = F, comment = ""}
 
 
-AICtab(m_egg.pred, burlapmodels[['m_tcg_2000.2010_h13_full']], 
-    burlapmodels[['m_sr_2000.2010_h13_16d']], 
-    base = TRUE, weights = TRUE, mnames = c("m_egg.pred", 
-    "m_tcg_2000.2010_h13_full", "m_sr_2000.2010_h13_16d")) %>% 
+AICtab(m_egg.pred, burlapmodels[['m_tcg_2000_2010_h13_full']], 
+    burlapmodels[['m_sr_2000_2010_h13_16d']], 
+    base = TRUE, weights = TRUE, mnames = c("Predict abundance with egg masses", 
+    "m_tcg_2000-2010_h13_full", "m_sr_2000-2010_h13_16d")) %>% 
 
     # Convert AIC table to rowname
     data.frame %>%
@@ -1000,7 +1035,8 @@ egg.predictor.param <- plot_model(m_egg.pred,
     axis.labels = c("Egg Masses:Year 2018", "Year 2018", "Egg Masses")) + 
     
     # Add title, axis label
-    labs(y = "Parameter Estimate", title = "Egg Mass Predictor") +
+    labs(y = "Parameter Estimate", 
+         title = "Predict Larval Abundance with Egg Masses") +
 
     # Add theme
     ggplot.theme
@@ -1056,7 +1092,7 @@ egg.predictor.pred <- m_egg.pred %>%
         
         # Add axis labels
         labs(x = "Egg Masses", y = "Fitted Larval Abundance", 
-            title = "Egg Mass Predictor") +
+            title = "Predict Larval Abundance with Egg Masses") +
     
         # Put legend inside the plot panel
         theme(legend.position = c(0.8, 0.8)) +
@@ -1084,7 +1120,7 @@ ggdraw() +
     draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
   
     # Add title
-    draw_plot_label("Egg Mass Predictor", 0.1, 1, size = 20)
+    draw_plot_label("Predict Larval Abundance with Egg Masses", -0.1, 1, size = 20)
 
 
 ```
@@ -1098,7 +1134,7 @@ Let's compare the old baseline model (reanalysis) to the new model with the same
 
 ly.comb %>% 
     filter(Year == 2017) %>%
-    gather(model, score, m_reanalysis, m_tcg_2000.2010_h13_full) %>%
+    gather(model, score, m_reanalysis, m_tcg_2000_2010_h13_full) %>%
     ggplot(aes(x = score)) + 
         facet_wrap(~ model, nrow = 1) + 
         geom_histogram(bins = 30, fill = "lightblue", color = "black") +
@@ -1112,7 +1148,7 @@ ly.comb %>%
 
 ly.comb %>% 
     filter(Year == 2018) %>%
-    gather(model, score, m_reanalysis, m_tcg_2000.2010_h13_full) %>%
+    gather(model, score, m_reanalysis, m_tcg_2000_2010_h13_full) %>%
     ggplot(aes(x = score)) + 
         facet_wrap(~ model, nrow = 1) + 
         geom_histogram(bins = 30, fill = "lightblue", color = "black") +
@@ -1137,7 +1173,7 @@ Red lines are slope = 1. In both cases, Val's new models have less negative cond
 ly.comb %>%
 
     # take the two best new models and convert them from columns to rows
-    pivot_longer(cols = c(m_sr_2000.2010_h13_16d, m_tcg_2000.2010_h13_full), 
+    pivot_longer(cols = c(m_sr_2000_2010_h13_16d, m_tcg_2000_2010_h13_full), 
         names_to = "model", values_to = "score") %>%
 
     # Construct the plot
