@@ -154,12 +154,10 @@ library(knitr) # Needed for kable()
 burlap <- read.csv("data/burlap-surveys.csv")
 
 # Read in mean condition scores for 2017
-scores.2017 <- read.csv("data/plots_ct_burlap_2017_v2-2.csv") %>%
-    setNames(str_remove(names(.), '_201\\d_05_01_201\\d_09_30'))
+scores.2017 <- read.csv("data/plots_ct_burlap_2017_v2-3.csv")
 
 # Read in mean condtion scores for 2018
-scores.2018 <- read.csv("data/plots_ct_burlap_2018_v2-2.csv") %>%
-     setNames(str_remove(names(.), '_201\\d_05_01_201\\d_09_30'))
+scores.2018 <- read.csv("data/plots_ct_burlap_2018_v2-3.csv")
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -376,7 +374,7 @@ tcg.pred <- expand.grid(
   
     # Range of scores from the CT data, adjust as needed
     #range(ly.comb$m_tcg_2000_2010_h13_full)
-    m_tcg_2000_2010_h13_full = seq(-3, 2.25, by = 0.25),
+    m_tcg_2000_2010_h13_full = seq(-3.15, 2.1, by = 0.25),
     
     # Set the two years
     Year = c("2017", "2018"),
