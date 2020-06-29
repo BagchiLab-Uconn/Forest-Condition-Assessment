@@ -154,10 +154,10 @@ library(knitr) # Needed for kable()
 burlap <- read.csv("data/burlap-surveys.csv")
 
 # Read in mean condition scores for 2017
-scores.2017 <- read.csv("data/plots_ct_burlap_2017_v2-3.csv")
+scores.2017 <- read.csv("data/plots_ct_burlap_2017_v3-0.csv")
 
 # Read in mean condtion scores for 2018
-scores.2018 <- read.csv("data/plots_ct_burlap_2018_v2-3.csv")
+scores.2018 <- read.csv("data/plots_ct_burlap_2018_v3-0.csv")
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
