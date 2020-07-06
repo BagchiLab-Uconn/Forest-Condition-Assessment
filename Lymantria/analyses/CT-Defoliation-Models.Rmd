@@ -1,0 +1,1233 @@
+---
+title: "CT Defoliation Model Comparison"
+author: "James Mickley and Audrey Barker Plotkin"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+graphics: yes
+output:
+  github_document:
+    toc: yes
+    toc_depth: 5
+    pandoc_args: --webtex
+  html_document:
+    keep_md: yes
+    theme: readable
+    mathjax: default
+  html_notebook:
+    code_folding: hide
+    theme: readable
+    mathjax: default
+  pdf_document:
+    toc: yes
+header-includes:
+  \usepackage{float}
+  \floatplacement{figure}{H}
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = F}
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@ Knitr Options
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Set root directory to the project directory
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+
+
+# Set default knitr options: 
+# Suppress warnings and messages, cache chunks, 
+#  set default figure size to 6x8 at 300 dpi, and save a png and pdf
+knitr::opts_chunk$set(warning = F, message = F, collapse = T, cache = T,
+    fig.height = 6, fig.width = 8, dpi = 300, # 6x8" @ 300dpi:1800x2400=4.3MP
+    dev = c('png', 'pdf'), dev.args = list(pdf = list(onefile = F)))
+
+```
+
+
+```{r, Database_Data, include = F, eval = F}
+
+library(DBI) # Needed for SQL
+library(odbc) # Needed for database connection
+
+# Connect to the database via ODBC, prompting for a password
+# Note: the rstudioapi call for the password won't work if run through knitr
+con1 <- dbConnect(odbc::odbc(), "ODBC MySQL",
+    database = "FEN",
+    uid = rstudioapi::showPrompt("Database username", "Your Bagchi server username", 
+        default = "mickley"),
+    pass = rstudioapi::askForSecret(name = "dbpass", 
+        title = "Database password"))
+
+
+# Run a query joining data from the deer surveys with point, site, and plant data
+burlap <- dbGetQuery(con1, 
+    "/* Export a full dataset for burlap data */
+    /* Incorporates burlap setup data, caterpillar & tree species, and site data */
+    SELECT st.BlockID, st.SiteID, st.FragSize, st.SizeClass, st.Hunted, 
+    st.BrowseProb, st.ForestProp1km, st.FragRatio1km, ls.Mean as SiteDefoliation, 
+    pt.PointID, lsp.Value as PointDefoliation, pt.Latitude, pt.Longitude, 
+    bss.Year, bss.TreeID, bs.SetupDate, tree.ScientificName as Tree, 
+    tree.Genus as TreeGenus, tree.Species as TreeSpecies, 
+    tree.Family as TreeFamily, bs.DBH, bs.EggMasses,
+    bss.Survey, bss.SurveyDate, cat.ScientificName as Caterpillar,
+    cat.Genus as CatGenus, cat.Species as CatSpecies, 
+    cat.Family as CatFamily,
+    bss.Abundance, bss.Alive, bss.Dead, bss.Pathogen, bss.Fungus, bss.Virus, bss.Braconid, 
+    bss.Pupae, bss.AboveAlive, bss.AboveFungus, bss.AboveVirus, 
+    bss.AboveBraconid, bss.AbovePupae, bss.BurlapAlive, bss.BurlapFungus, 
+    bss.BurlapVirus, bss.BurlapBraconid, bss.BurlapPupae, bss.BelowAlive, 
+    bss.BelowFungus, bss.BelowVirus, bss.BelowBraconid, bss.BelowPupae,
+    bss.RearID FROM `BurlapSurveys` AS bss
+    LEFT JOIN `BurlapTrees` AS bt ON bss.TreeID = bt.TreeID
+    LEFT JOIN `BurlapSetup` AS bs ON bss.TreeID = bs.TreeID 
+        AND bss.Year = bs.Year
+    LEFT JOIN `Species` AS tree ON bt.PlantID = tree.SpeciesID
+    LEFT JOIN `Species` AS cat ON bss.CatID = cat.SpeciesID
+    LEFT JOIN `Points` AS pt ON bt.PointID = pt.PointID
+    LEFT JOIN `Sites` AS st ON pt.SiteID = st.SiteID
+    LEFT JOIN `LandsatSite` AS ls ON pt.SiteID = ls.SiteID 
+        AND bss.Year = ls.Year
+    LEFT JOIN `LandsatPoint` AS lsp ON pt.PointID = lsp.PointID 
+        AND bss.Year = lsp.Year
+    WHERE ls.Type = 'all'")
+
+# Examine the data
+str(burlap)
+head(burlap)
+
+# Write the data to CSV
+write.csv(burlap, file = "data/burlap-surveys.csv", row.names = F)
+
+```
+
+## Overview
+
+
+This analysis compares Val Pasquarella's defoliation data from Landsat satellite to 
+
+Here, we examine how varying the following components of the Landsat change-in-condition model affect how well that predicts defoliation on the ground:
+* Spectral index (TGC, NDVI, SR, EVI)
+* Baseline period (2000-2010, 2005-2015)
+* Harmonic periods (12- and -6 month, 12- and 4-month)
+* Data included (all available data which varies over time, consistent 16d interval)
+
+We evaluate the predictive ability of the following:
+* Landsat condition scores predicting larval Lymantria abundance
+* Landsat condition scores predicting Lymantria egg mass abundance
+* Egg mass abundance predicting larval Lymantria abundance
+
+### Summary of Results
+
+* For both larval abundance and egg masses, the baseline sr_2000_2010_h13_16d is the best predictor
+* All of the best models are SR (top 6 models). NDVI does
+* Condition score can account for 58-67% of the variation in larval abundance and 6-32% of the variation in egg masses
+* By comparison, egg masses only predict 55% of the variation in larval abundance, and condition scores outperform it as a predictor. 
+* Predictive ability of Landsat condition scores weakens in 2018, the non-outbreak year, but there is still a pattern.
+* Egg masses only predict larval abundance during the outbreak, no relationship in 2018
+
+
+
+
+```{r Main_Code, include = F, cache = F}
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@ Setup - This code is run, but output is hidden
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Load Packages
+library(tidyverse) # Needed for data wrangling: dplyr, tidyr, ggplot2
+library(cowplot) # Needed for publication-quality ggplots
+library(lme4) # Needed for glmms
+library(glmmTMB) # Needed for betabinomial models (overdispersed)
+library(bbmle) # Needed for AIC tables
+library(sjPlot) # Needed for plotting regression models with plot_model()
+library(broom.mixed) # Needed for augment()
+library(performance) # Needed for R squared r2() function
+library(lubridate) # Needed for converting dates
+library(knitr) # Needed for kable()
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@ Data Preparation
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Import datasets
+burlap <- read.csv("data/burlap-surveys.csv")
+
+# Read in mean condition scores for 2017
+scores.2017 <- read.csv("data/plots_ct_burlap_2017_v3-0.csv")
+
+# Read in mean condtion scores for 2018
+scores.2018 <- read.csv("data/plots_ct_burlap_2018_v3-0.csv")
+
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@ ggPlot Theme
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ggplot.theme <- theme_cowplot() + theme(
+    
+    # Serif fonts to approximate theme_tufte()
+    text = element_text(family = "serif"),
+    
+    # Text size for axis ticks
+    axis.text.y = element_text(size = 14),
+    axis.text.x = element_text(size = 14),
+    
+    # Text size for axis labels
+    # Also move them away from the axes a bit for more space
+    axis.title.x = element_text(size = 18, face = "bold", vjust = -1),
+    axis.title.y = element_text(size = 18, face = "bold", vjust = 1.5),
+    
+    # Plot title size, move away from plot
+    plot.title = element_text(size = 20, face = "bold", vjust = 5, hjust = 0.5),
+    
+    # Margins for top, right, bottom, left
+    plot.margin = grid::unit(c(1.5, 1.5, 1.5, 1.2), "lines"), 
+    
+    # Legend text size
+    legend.text = element_text(size = 14),
+    legend.text.align = 0, 
+    legend.title = element_text(size = 16, face = "bold"),
+    legend.key.size = grid::unit(1.4, "line"),
+    legend.key = element_blank(), 
+    
+    # Facet label text size and background
+    strip.text = element_text(size = 18, face = "bold"),
+    strip.background = element_rect(fill = NA)
+    )
+
+# Function to test a poisson or binomial model for overdispersion. See:
+# http://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#overdispersion
+# https://stats.stackexchange.com/questions/66586/
+overdispersion_test <- function(model, type = "pearson"){
+    
+    # Get the pearson residuals
+    residuals <- resid(model, type = type)
+    
+    # Get the residual degrees of freedom of the model
+    df <- df.residual(model)
+    
+    # Sum of residual deviance
+    dev <- sum(residuals ^ 2)
+    
+    # Overdispersion = sum of squared residuals / residual degrees of freedom
+    ratio <- round(dev / df, 3)
+    
+    # P-value 
+    pvalue <- round(pchisq(dev, df, lower.tail = FALSE), 3)
+    
+    # Get the formula
+    f = paste(as.character(formula(model))[2:3], collapse = " ~ ")
+    
+    # Get the model name
+    name <- deparse(substitute(model))
+
+    cat("Overdispersion ratio for model:", name, "\nformula:", f, 
+        "\n\nAcceptable range: 1 - 1.4\nOverdispersion ratio:",
+        ratio, " df:", df, " p =", pvalue, "\n", 
+        ifelse(pvalue < 0.05, "Data are overdispersed\n", 
+        "Data are not overdispersed\n"))
+    
+    # Return all the parameters
+    return(c(ratio = ratio, deviance = dev, df = df, pvalue = pvalue))
+    
+}
+
+
+# Function to add upper and lower confidence intervals to data from augment()
+# https://www.fromthebottomoftheheap.net/2018/12/10/confidence-intervals-for-glms/
+augment.conf <- function(data, model, level = 0.95) {
+  
+    # Get the inverse link function for the model
+    linkinv <- family(model)$linkinv
+      
+    # Figure out the quantile to multiply .se.fit by
+    # For 95%, this is qnorm(0.025) = 1.96
+    quantile <- qnorm((1 - level) / 2)
+    
+    # Predict model fitted values from the dataset passed to augment.conf()
+    augment(x = model, newdata = data, type.predict = "link") %>%
+
+    # Compute confidence intervals and backtransform to response scale
+    mutate(
+        
+        # Transform the fitted values to the response scale
+        fit = linkinv(.fitted),
+        
+        # Upper and lower confidence intervals on response scale
+        upper = linkinv(.fitted + (quantile * .se.fit)), 
+        lower = linkinv(.fitted - (quantile * .se.fit))
+        
+    ) %>%
+        
+    # Return the dataset with upper and lower confidence intervals
+    return()
+}
+
+```
+
+
+
+
+```{r Data_Wrangling, echo = F, comment = ""}
+
+# Combine the mean condition scores from 2017 and 2018
+mean.scores <- scores.2017 %>%
+  
+    # Add 2018 scores
+    rbind(scores.2018) %>%
+  
+    # Convert year to a factor for the defoliation dataset
+    mutate(Year = as.character(Year)) %>%
+  
+    # Remove extraneous columns
+    select(-system.index, -Block, -BlockID, -Site, -SiteID, - FragSize, 
+        -Hunted, -SizeClass, -.geo)
+
+
+# Wrangle the data
+ly <- burlap %>% 
+    
+    # Only include Lymantria
+    filter(CatGenus == "Lymantria") %>% 
+    
+    # Select a subset of columns
+    select(Year, BlockID, SiteID, FragSize, ForestProp1km, FragRatio1km, 
+        Hunted, BrowseProb, SiteDefoliation, PointID, TreeID, Tree, DBH, 
+        EggMasses, Survey, SurveyDate, Abundance, Alive, Dead, Fungus, Virus) %>%
+    
+    # Make some new columns
+    mutate(
+      
+        # Convert Year to a factor   
+        Year = as.character(Year),
+        
+        # Convert survey date to a date
+        SurveyDate = ymd(SurveyDate),
+        
+        # Number killed by pathogens
+        Pathogen = Fungus + Virus,
+        
+        # Make a column for mortality rate for each tree
+        Mortality = ifelse(Abundance > 0, Pathogen/Abundance, 0))
+
+
+# Construct a burlap point level dataset to compare against 
+# defoliation point values
+ly.point <- ly %>% 
+    
+    # Variables to keep, grouping by PointID
+    group_by(Year, BlockID, SiteID, FragSize, ForestProp1km, FragRatio1km, 
+        Hunted, BrowseProb, SiteDefoliation, PointID) %>%
+    
+    # Summarize lymantria variables by burlap point
+    summarize(
+        
+        # Sums
+        # Divide egg masses by 2, since they were only measured once
+        EggMasses = ifelse(all(is.na(EggMasses)), NA,
+            sum(EggMasses, na.rm = T)/2),
+        Abundance = ifelse(all(is.na(Abundance)), NA, 
+            sum(Abundance, na.rm = T)),
+        Alive = ifelse(all(is.na(Alive)), NA, 
+            sum(Alive, na.rm = T)), 
+        Pathogen = ifelse(all(is.na(Pathogen)), NA, 
+            sum(Pathogen, na.rm = T)), 
+        Mortality = Pathogen/Abundance) %>%
+    
+    # Ungroup data
+    ungroup() %>%
+    
+    # Sort the dataset
+    arrange(Year, BlockID, SiteID, PointID) %>%
+    
+    # Convert to dataframe
+    data.frame()
+
+
+# Combine datasets using a join on both the PointID and Year columns
+ly.comb <- mean.scores %>% 
+
+    # Join the datasets together
+    right_join(ly.point, by = c("Year", "PointID"))
+
+# Take a peek at the combined dataset
+str(ly.comb)
+
+
+
+# Make a dummy sr dataset for interaction/prediction plots
+sr.pred <- expand.grid(
+    
+    # Range of scoresfrom the CT data, adjust as needed
+    #range(ly.comb$m_sr_2000_2010_h13_16d)
+    m_sr_2000_2010_h13_16d = seq(-2.6, 2.9, by = 0.25),
+    
+    # Set the two years
+    Year = c("2017", "2018"),
+    
+    # Model without random factors (the mean random effect)
+    BlockID = NA, SiteID = NA)
+
+
+tcg.pred <- expand.grid(
+  
+    # Range of scores from the CT data, adjust as needed
+    #range(ly.comb$m_tcg_2000_2010_h13_full)
+    m_tcg_2000_2010_h13_full = seq(-3.15, 2.1, by = 0.25),
+    
+    # Set the two years
+    Year = c("2017", "2018"),
+    
+    # Model without random factors (the mean random effect)
+    BlockID = NA, SiteID = NA)
+
+```
+
+## Burlap Larva
+
+### Models
+
+```{r Burlap_Models, echo = F, comment = ""}
+
+##### Connecticut Groundtruthing Models #####
+
+# Make a vector containing column names of all of the different baseline models
+model.scores <- ly.comb %>% 
+
+    # Select all the columns that start with score_
+    select(starts_with("m_")) %>% 
+
+    # Get the column names
+    names()
+
+
+# Make a new list to hold the groundtruthing models
+burlapmodels <- list()
+
+# Iterate over the vector of scores, creating a new model predicting
+# lymantria larval abundance from each score.
+for (model.score in model.scores) {
+
+    # Splice in each baseline column name into the model formula
+    model.formula <- as.formula(paste0("Abundance ~ ", model.score, 
+        " * Year + (1|BlockID/SiteID)"))
+
+    # Print out the model formula, for debugging
+    #print(model.formula)
+
+    # Run a model using each baseline to predict lymantria abundance
+    # Store the resulting model in the models list
+    burlapmodels[[model.score]] <- glmmTMB(model.formula, family = nbinom2, 
+        data = ly.comb)
+
+}
+
+
+```
+
+### AIC
+
+Here we compare all of the baselines using [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) model selection. 
+
+Models are ranked according to how good they are at predicting Lymantria abundance from burlap traps. 
+
+The column to pay attention to is dAIC, or the difference in AIC between models. A rule of thumb is that models with a dAIC less than 2 are not notably different in their quality, and that models within 6 are similar.
+
+
+```{r Burlap_AIC, echo = F, comment = ""}
+
+##### Compare the models
+AIC.burlap <- AICtab(burlapmodels, base = TRUE, weights = TRUE) %>% 
+
+    # Convert AIC table to rowname
+    data.frame %>%
+
+    # Make the model rownames into a column
+    rownames_to_column(var = "model")
+
+
+# Write to CSV
+write.csv(AIC.burlap, file = "data/CTBurlap32ModelsAIC.csv", row.names = FALSE)
+
+# Display
+AIC.burlap %>%
+    
+    # Print out a table
+    kable(digits = 2)
+
+
+```
+
+### R<sup>2</sup>
+
+Here, we are calculating the proportion of variance in the Lymantria abundance data that is explained by each model. 
+
+We actually get two R<sup>2</sup> numbers for these models, a marginal and a conditional R<sup>2</sup>: 
+
+* **conditional R<sup>2</sup>**: the proportion of variance explained by the whole model: year, defoliation score, block, and site
+* **marginal R<sup>2</sup>**: the proportion of variance explained by just year and defoliation score (just fixed factors)
+
+In our case, we're mostly interested in the marginal R<sup>2</sup>. This is going to tell us how well that particular defoliation score explains the abundance of Lymantria.
+
+```{r Burlap_R2, echo = F, comment = ""}
+
+# Calculate R^2 for each model
+r2.burlap  <- sapply(burlapmodels, FUN = r2)
+
+```
+
+```{r Burlap_R2_Table, echo = F, comment = ""}
+
+# Show a table of R2
+# Convert the R^2 data to a more readable format
+r2.burlap %>% 
+
+    # Transpose, making rows to columns and vice versa
+    t() %>% 
+    
+    # Convert to dataframe
+    data.frame() %>%
+
+    # Convert the baseline rownames to their own column called baseline
+    rownames_to_column(var = "baseline") %>%
+
+    # Convert the two R2 columns to numeric
+    mutate_at(vars(-baseline), as.numeric) %>% 
+
+    # Reorder columns
+    select(baseline, R2_marginal, R2_conditional) %>%
+
+    # Sort by R2_marginal descending
+    arrange(desc(R2_marginal)) %>%
+    
+    # Print out a table
+    kable(digits = 2)
+
+
+```
+
+### Plots from Top Baselines
+
+#### sr_2000-2010_h13_16d
+
+
+```{r Burlap_sr_Param, echo = F, comment = ""}
+
+# Plot fixed effects
+burlap.sr.param <- plot_model(burlapmodels[['m_sr_2000_2010_h13_16d']], 
+    type = "est", show.values = T, show.p = T, vline.color = "gray60", 
+    transform = NULL, value.offset = 0.2, , 
+    axis.labels = c("Score:Year 2018", "Year 2018", "Score")) + 
+    
+    # Add title, axis label
+    labs(y = "Parameter Estimate", title = "Baseline: sr_2000-2010_h13_16d") +
+
+    # Add theme
+    ggplot.theme
+
+
+# Display Plot
+burlap.sr.param
+
+
+```
+
+```{r Burlap_sr_Pred, echo = F, comment = ""}
+
+
+# Make a dummy sr dataset for interaction/prediction plots
+burlap.sr <- sr.pred %>%
+  
+    # Augment with fitted values and confidence intervals
+    augment.conf(burlapmodels[['m_sr_2000_2010_h13_16d']])
+
+
+# Make a prediction plot for sr
+burlap.sr.pred <- burlapmodels[['m_sr_2000_2010_h13_16d']] %>%
+  
+    # Augment the actual data, adding fitted values and residuals
+    augment(type.predict = "response") %>%
+    
+    # Plot defoliation against model fitted values of abundance
+    ggplot(aes(x = m_sr_2000_2010_h13_16d, y = .fitted, color = Year)) +
+      
+        # Add model prediction trend line and 95% confidence intervals
+        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
+            stat = "identity", data = burlap.sr) +
+        
+        # Add fitted data values as scatterplot
+        geom_point() +
+        
+        # Add errorbars to the fitted values equal to the residuals
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
+        
+        # Custom colors
+        scale_color_manual(values = c("black", "blue")) + 
+        scale_fill_manual(values = c("black", "blue")) +
+        
+        # Add axis labels
+        labs(x = "Defoliation Score", y = "Fitted Larval Abundance", 
+            title = "Baseline: sr_2000-2010_h13_16d") +
+    
+        # Put legend inside the plot panel
+        theme(legend.position = c(0.8, 0.8)) +
+        
+        # Add Theme
+        ggplot.theme
+
+
+# Show plot
+burlap.sr.pred
+
+```
+
+
+```{r Burlap_sr_Combined, echo = F, comment = "", fig.height = 5, fig.width = 10}
+
+# Combine plots
+ggdraw() + 
+    
+    # Add the two plots
+    draw_plot(burlap.sr.param + ggtitle(""), 0, 0, 0.4, 0.95) +
+    draw_plot(burlap.sr.pred + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
+    
+    # Add subplot labels
+    draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+  
+    # Add title
+    draw_plot_label("Baseline: sr_2000-2010_h13_16d", 0.1, 1, size = 20)
+
+
+```
+
+#### tcg_2000-2010_h13_full
+
+
+```{r Burlap_tcg_Param, echo = F, comment = ""}
+
+# Plot fixed effects
+burlap.tcg.param <- plot_model(burlapmodels[['m_tcg_2000_2010_h13_full']], 
+    type = "est", show.values = T, show.p = T, vline.color = "gray60", 
+    transform = NULL, value.offset = 0.2, , 
+    axis.labels = c("Score:Year 2018", "Year 2018", "Score")) + 
+    
+    # Add title, axis label
+    labs(y = "Parameter Estimate", title = "Baseline: tcg_2000-2010_h13_full") +
+
+    # Add theme
+    ggplot.theme
+
+
+# Display Plot
+burlap.tcg.param
+
+
+```
+
+```{r Burlap_tcg_Pred, echo = F, comment = ""}
+
+
+# Make a dummy tcg dataset for interaction/prediction plots
+burlap.tcg <- tcg.pred %>%
+    
+    # Augment with fitted values and confidence intervals
+    augment.conf(burlapmodels[['m_tcg_2000_2010_h13_full']])
+
+
+# Make a prediction plot for sr
+burlap.tcg.pred <- burlapmodels[['m_tcg_2000_2010_h13_full']] %>%
+  
+    # Augment the actual data, adding fitted values and residuals
+    augment(type.predict = "response") %>%
+    
+    # Plot defoliation against model fitted values of abundance
+    ggplot(aes(x = m_tcg_2000_2010_h13_full, y = .fitted, color = Year)) +
+      
+        # Add model prediction trend line and 95% confidence intervals
+        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
+            stat = "identity", data = burlap.tcg) +
+        
+        # Add fitted data values as scatterplot
+        geom_point() +
+        
+        # Add errorbars to the fitted values equal to the residuals
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
+        
+        # Custom colors
+        scale_color_manual(values = c("black", "blue")) + 
+        scale_fill_manual(values = c("black", "blue")) +
+  
+        # Add axis labels
+        labs(x = "Defoliation Score", y = "Fitted Larval Abundance", 
+            title = "Baseline: tcg_2000-2010_h13_full") +
+    
+        # Put legend inside the plot panel
+        theme(legend.position = c(0.8, 0.8)) +
+        
+        # Add Theme
+        ggplot.theme
+
+
+# Show plot
+burlap.tcg.pred
+
+
+
+```
+
+```{r Burlap_tcg_Combined, echo = F, comment = "", fig.height = 5, fig.width = 10}
+
+# Combine plots
+ggdraw() + 
+    
+    # Add the two plots
+    draw_plot(burlap.tcg.param + ggtitle(""), 0, 0, 0.4, 0.95) +
+    draw_plot(burlap.tcg.pred + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
+    
+    # Add subplot labels
+    draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+  
+    # Add title
+    draw_plot_label("Baseline: tcg_2000-2010_h13_full", 0.1, 1, size = 20)
+
+
+```
+
+
+## Egg Mass Models
+
+
+```{r Egg_Models, echo = F, comment = ""}
+
+# Make a new list to hold the groundtruthing models
+eggmodels <- list()
+
+# Iterate over the vector of scores, creating a new model predicting
+# lymantria abundance from each score.
+for (model.score in model.scores) {
+
+    # Splice in each baseline column name into the model formula
+    # TODO: Add year & score:year back into model when we have 2018 data
+    model.formula <- as.formula(paste0("EggMasses ~ ", model.score, 
+        " * Year + (1|BlockID/SiteID)"))
+
+    # Print out the model formula, for debugging
+    #print(model.formula)
+
+    # Run a model using each baseline to predict lymantria abundance
+    # Store the resulting model in the models list
+    eggmodels[[model.score]] <- glmmTMB(model.formula, family = nbinom2, 
+        data = ly.comb)
+
+}
+
+```
+
+### AIC
+
+```{r Egg_AIC, echo = F, comment = ""}
+
+# Compare the models
+AIC.egg <- AICtab(eggmodels, base = TRUE, weights = TRUE) %>% 
+
+    # Convert AIC table to rowname
+    data.frame %>%
+
+    # Make the model rownames into a column
+    rownames_to_column(var = "model")
+
+# Write to CSV
+write.csv(AIC.egg, file = "data/CTEggMasses32ModelsAIC.csv", row.names = FALSE)
+
+# Display
+AIC.egg %>%
+    
+    # Print out a table
+    kable(digits = 2)
+
+
+
+```
+
+### R<sup>2</sup>
+
+```{r Egg_R2, echo = F, comment = ""}
+
+# Calculate R^2 for each model
+r2.egg  <- sapply(eggmodels, FUN = r2)
+
+```
+
+```{r Egg_R2_Table, echo = F, comment = ""}
+
+# Show a table of R2
+# Convert the R^2 data to a more readable format
+r2.egg %>% 
+
+    # Transpose, making rows to columns and vice versa
+    t() %>% 
+    
+    # Convert to dataframe
+    data.frame() %>%
+
+    # Convert the baseline rownames to their own column called baseline
+    rownames_to_column(var = "baseline") %>%
+
+    # Convert the two R2 columns to numeric
+    mutate_at(vars(-baseline), as.numeric) %>% 
+
+    # Reorder columns
+    select(baseline, R2_marginal, R2_conditional) %>%
+
+    # Sort by R2_marginal descending
+    arrange(desc(R2_marginal)) %>%
+    
+    # Print out a table
+    kable(digits = 2)
+
+
+```
+
+
+### Plots from Top Baselines
+
+#### sr_2000-2010_h13_16d
+
+
+```{r Egg_sr_Param, echo = F, comment = ""}
+
+# Plot fixed effects
+egg.sr.param <- plot_model(eggmodels[['m_sr_2000_2010_h13_16d']], 
+    type = "est", show.values = T, show.p = T, vline.color = "gray60", 
+    transform = NULL, value.offset = 0.2, , 
+    axis.labels = c("Score:Year 2018", "Year 2018", "Score")) + 
+    
+    # Add title, axis label
+    labs(y = "Parameter Estimate", title = "Baseline: sr_2000-2010_h13_16d") +
+
+    # Add theme
+    ggplot.theme
+
+
+# Display Plot
+egg.sr.param
+
+
+```
+
+```{r Egg_sr_Pred, echo = F, comment = ""}
+
+
+# Make a dummy sr dataset for interaction/prediction plots
+egg.sr <- sr.pred %>%
+    
+    # Augment with fitted values and confidence intervals
+    augment.conf(eggmodels[['m_sr_2000_2010_h13_16d']])
+
+
+# Make a prediction plot for sr
+egg.sr.pred <- eggmodels[['m_sr_2000_2010_h13_16d']] %>%
+  
+    # Augment the actual data, adding fitted values and residuals
+    augment(type.predict = "response") %>%
+    
+    # Plot defoliation against model fitted values of abundance
+    ggplot(aes(x = m_sr_2000_2010_h13_16d, y = .fitted, color = Year)) +
+      
+        # Add model prediction trend line and 95% confidence intervals
+        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
+            stat = "identity", data = egg.sr) +
+        
+        # Add fitted data values as scatterplot
+        geom_point() +
+        
+        # Add errorbars to the fitted values equal to the residuals
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
+        
+        # Custom colors
+        scale_color_manual(values = c("black", "blue")) + 
+        scale_fill_manual(values = c("black", "blue")) +
+        
+        # Add axis labels
+        labs(x = "Defoliation Score", y = "Fitted Egg Masses", 
+            title = "Baseline: sr_2000-2010_h13_16d") +
+    
+        # Put legend inside the plot panel
+        theme(legend.position = c(0.8, 0.8)) +
+        
+        # Add Theme
+        ggplot.theme
+
+
+# Show plot
+egg.sr.pred
+
+```
+
+
+```{r Egg_sr_Combined, echo = F, comment = "", fig.height = 5, fig.width = 10}
+
+# Combine plots
+ggdraw() + 
+    
+    # Add the two plots
+    draw_plot(egg.sr.param + ggtitle(""), 0, 0, 0.4, 0.95) +
+    draw_plot(egg.sr.pred + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
+    
+    # Add subplot labels
+    draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+  
+    # Add title
+    draw_plot_label("Baseline: sr_2000-2010_h13_16d", 0.1, 1, size = 20)
+
+
+```
+
+#### tcg_2000-2010_h13_full
+
+
+```{r Egg_tcg_Param, echo = F, comment = ""}
+
+# Plot fixed effects
+egg.tcg.param <- plot_model(eggmodels[['m_tcg_2000_2010_h13_full']], 
+    type = "est", show.values = T, show.p = T, vline.color = "gray60", 
+    transform = NULL, value.offset = 0.2, , 
+    axis.labels = c("Score:Year 2018", "Year 2018", "Score")) + 
+    
+    # Add title, axis label
+    labs(y = "Parameter Estimate", title = "Baseline: tcg_2000-2010_h13_full") +
+
+    # Add theme
+    ggplot.theme
+
+
+# Display Plot
+egg.tcg.param
+
+
+```
+
+```{r Egg_tcg_Pred, echo = F, comment = ""}
+
+
+# Make a dummy tcg dataset for interaction/prediction plots
+egg.tcg <- tcg.pred %>%
+    
+    # Augment with fitted values and confidence intervals
+    augment.conf(eggmodels[['m_tcg_2000_2010_h13_full']])
+
+
+# Make a prediction plot for sr
+egg.tcg.pred <- eggmodels[['m_tcg_2000_2010_h13_full']] %>%
+  
+    # Augment the actual data, adding fitted values and residuals
+    augment(type.predict = "response") %>%
+    
+    # Plot defoliation against model fitted values of abundance
+    ggplot(aes(x = m_tcg_2000_2010_h13_full, y = .fitted, color = Year)) +
+      
+        # Add model prediction trend line and 95% confidence intervals
+        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
+            stat = "identity", data = egg.tcg) +
+        
+        # Add fitted data values as scatterplot
+        geom_point() +
+        
+        # Add errorbars to the fitted values equal to the residuals
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
+        
+        # Custom colors
+        scale_color_manual(values = c("black", "blue")) + 
+        scale_fill_manual(values = c("black", "blue")) +
+  
+        # Add axis labels
+        labs(x = "Defoliation Score", y = "Fitted Egg Masses", 
+            title = "Baseline: tcg_2000-2010_h13_full") +
+    
+        # Put legend inside the plot panel
+        theme(legend.position = c(0.8, 0.8)) +
+        
+        # Add Theme
+        ggplot.theme
+
+
+# Show plot
+egg.tcg.pred
+
+
+
+```
+
+```{r Egg_tcg_Combined, echo = F, comment = "", fig.height = 5, fig.width = 10}
+
+# Combine plots
+ggdraw() + 
+    
+    # Add the two plots
+    draw_plot(egg.tcg.param + ggtitle(""), 0, 0, 0.4, 0.95) +
+    draw_plot(egg.tcg.pred + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
+    
+    # Add subplot labels
+    draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+  
+    # Add title
+    draw_plot_label("Baseline: tcg_2000-2010_h13_full", 0.1, 1, size = 20)
+
+
+```
+
+
+### Egg Mass Predictor
+
+```{r Egg_Predictor_Model, echo = F, comment = ""}
+
+# Predict larval abundance with egg mass counts
+m_egg.pred <- glmmTMB(Abundance ~ EggMasses * Year + (1|BlockID/SiteID), 
+    family = nbinom2, data = ly.comb)
+
+
+
+```
+
+#### AIC
+
+```{r Egg_Predictor_AIC, echo = F, comment = ""}
+
+
+AICtab(m_egg.pred, burlapmodels[['m_tcg_2000_2010_h13_full']], 
+    burlapmodels[['m_sr_2000_2010_h13_16d']], 
+    base = TRUE, weights = TRUE, mnames = c("Predict abundance with egg masses", 
+    "m_tcg_2000-2010_h13_full", "m_sr_2000-2010_h13_16d")) %>% 
+
+    # Convert AIC table to rowname
+    data.frame %>%
+
+    # Make the model rownames into a column
+    rownames_to_column(var = "model") %>% 
+  
+    kable(digits = 2)
+
+```
+
+#### R<sup>2</sup>
+
+```{r Egg_Predictor_R2, echo = F, comment = ""}
+formula(m_egg.pred)
+r2(m_egg.pred)
+
+
+```
+
+#### Plots
+
+
+
+
+```{r Egg_Predictor_Param, echo = F, comment = ""}
+
+# Plot fixed effects
+egg.predictor.param <- plot_model(m_egg.pred, 
+    type = "est", show.values = T, show.p = T, vline.color = "gray60", 
+    transform = NULL, value.offset = 0.2 , 
+    axis.labels = c("Egg Masses:Year 2018", "Year 2018", "Egg Masses")) + 
+    
+    # Add title, axis label
+    labs(y = "Parameter Estimate", 
+         title = "Predict Larval Abundance with Egg Masses") +
+
+    # Add theme
+    ggplot.theme
+
+
+# Display Plot
+egg.predictor.param
+
+
+```
+
+```{r Egg_Predictor_Pred, echo = F, comment = ""}
+
+# Make a dummy sr dataset for interaction/prediction plots
+egg.predictor <- expand.grid(
+  
+    # Range of egg mass counts
+    #range(ly.comb$EggMasses, na.rm = T)
+    EggMasses = seq(0, 265, by = 25),
+    
+    # Set the two years
+    Year = c("2017", "2018"),
+    
+    # Model without random factors (the mean random effect)
+    BlockID = NA, SiteID = NA) %>%
+
+    # Augment with fitted values and confidence intervals
+    augment.conf(m_egg.pred)
+
+
+# Make a prediction plot for sr
+egg.predictor.pred <- m_egg.pred %>%
+  
+    # Augment the actual data, adding fitted values and residuals
+    augment(type.predict = "response") %>%
+    
+    # Plot defoliation against model fitted values of abundance
+    ggplot(aes(x = EggMasses, y = .fitted, color = Year)) +
+      
+        # Add model prediction trend line and 95% confidence intervals
+        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
+            stat = "identity", data = egg.predictor) +
+        
+        # Add fitted data values as scatterplot
+        geom_point() +
+        
+        # Add errorbars to the fitted values equal to the residuals
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
+        
+        # Custom colors
+        scale_color_manual(values = c("black", "blue")) + 
+        scale_fill_manual(values = c("black", "blue")) +
+        
+        # Add axis labels
+        labs(x = "Egg Masses", y = "Fitted Larval Abundance", 
+            title = "Predict Larval Abundance with Egg Masses") +
+    
+        # Put legend inside the plot panel
+        theme(legend.position = c(0.8, 0.8)) +
+        
+        # Add Theme
+        ggplot.theme
+
+
+# Show plot
+egg.predictor.pred
+
+```
+
+
+```{r Egg_Predictor_Combined, echo = F, comment = "", fig.height = 5, fig.width = 10}
+
+# Combine plots
+ggdraw() + 
+    
+    # Add the two plots
+    draw_plot(egg.predictor.param + ggtitle(""), 0, 0, 0.4, 0.95) +
+    draw_plot(egg.predictor.pred + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
+    
+    # Add subplot labels
+    draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+  
+    # Add title
+    draw_plot_label("Predict Larval Abundance with Egg Masses", -0.1, 1, size = 20)
+
+
+```
+
+
+## Graphs
+
+Let's compare the old baseline model (reanalysis) to the new model with the same parameters (tasseled cap greenness, 2000-2010, h13 harmonics, full dataset), and see what has changed in the distribution of scores
+
+```{r New_Baseline_Comparison_2017, echo = F, comment = ""}
+
+ly.comb %>% 
+    filter(Year == 2017) %>%
+    gather(model, score, m_reanalysis, m_tcg_2000_2010_h13_full) %>%
+    ggplot(aes(x = score)) + 
+        facet_wrap(~ model, nrow = 1) + 
+        geom_histogram(bins = 30, fill = "lightblue", color = "black") +
+        labs(title = "2017 Distribution", x = "Condition Score") +
+        theme_cowplot() + 
+        ggplot.theme
+
+```
+
+```{r New_Baseline_Comparison_2018, echo = F, comment = ""}
+
+ly.comb %>% 
+    filter(Year == 2018) %>%
+    gather(model, score, m_reanalysis, m_tcg_2000_2010_h13_full) %>%
+    ggplot(aes(x = score)) + 
+        facet_wrap(~ model, nrow = 1) + 
+        geom_histogram(bins = 30, fill = "lightblue", color = "black") +
+        labs(title = "2018 Distribution", x = "Condition Score") +
+        theme_cowplot() + 
+        ggplot.theme
+
+
+```
+
+#### Compare condition scores between baselines
+
+Here we are looking at how well condition scores for individual plots agree between the original reanalysis data product and the new condition scores.
+
+A lot of scatter means that at a point level, things are substantially different.
+
+Red lines are slope = 1. In both cases, Val's new models have less negative condition scores (values shifted up relative to the reanalysis ones). There's not much change in slope, which is good. 
+
+```{r Baseline_Comp, echo = F, comment = ""}
+
+# Compare the two best new model scores to the original reanalysis scores
+ly.comb %>%
+
+    # take the two best new models and convert them from columns to rows
+    pivot_longer(cols = c(m_sr_2000_2010_h13_16d, m_tcg_2000_2010_h13_full), 
+        names_to = "model", values_to = "score") %>%
+
+    # Construct the plot
+    ggplot(aes(x = m_reanalysis, y = score)) + 
+
+        # Make facets for each model
+        facet_wrap(~ model) + 
+
+        # Add scatterplot, with larger points
+        geom_point(size = 2) + 
+
+        # Add a trendline linear smoother
+        geom_smooth(method = "lm") + 
+
+        geom_abline(slope=1, color = "red") +
+
+        # Add title and y-axis label
+        labs(title = "Compare Reanalysis to New Models", y = "New Score") + 
+
+        # Theme the graph
+        theme_cowplot() + 
+        ggplot.theme
+
+```
+
+
+#### Condition Score Distributions
+
+Another interesting comparison is to compare the distribution of condition scores for the same year between Val's models
+
+There's some variation in distribution shape, spread, and how negative scores are between baselines. NDVI is consistently less negative.
+
+```{r Score_Distributions, echo = F, comment = ""}
+
+# Plot histograms of the score distributions for each model
+ly.comb %>% filter(Year == 2017) %>%
+
+    # take all of models and convert them from columns to rows
+    pivot_longer(cols = starts_with("m_"), 
+        names_to = "model", values_to = "score") %>%
+
+        # Construct the plot
+        ggplot(aes(x = score)) + 
+
+            # Make facets for each model
+            facet_wrap(~ model, nrow = 2) + 
+
+            # Add a histogram layer
+            geom_histogram(bins = 30, fill = "lightblue", color = "black") +
+
+            # Add title and x-axis label
+            labs(title = "2017 Distribution", x = "Condition Score") +
+
+            # Theme the graph
+            theme_cowplot() + 
+            ggplot.theme
+
+```
+
