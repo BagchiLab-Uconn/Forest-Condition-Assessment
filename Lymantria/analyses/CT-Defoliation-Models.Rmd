@@ -426,6 +426,33 @@ for (model.score in model.scores) {
 
 ```
 
+```{r Burlap_Models_2017, echo = F, comment = ""}
+
+
+# Make a new list to hold the groundtruthing models
+burlapmodels17 <- list()
+
+# Iterate over the vector of scores, creating a new model predicting
+# lymantria larval abundance from each score.
+for (model.score in model.scores) {
+
+    # Splice in each baseline column name into the model formula
+    model.formula <- as.formula(paste0("Abundance ~ ", model.score, 
+        " + (1|BlockID/SiteID)"))
+
+    # Print out the model formula, for debugging
+    #print(model.formula)
+
+    # Run a model using each baseline to predict lymantria abundance
+    # Store the resulting model in the models list
+    burlapmodels17[[model.score]] <- glmmTMB(model.formula, family = nbinom2, 
+        data = ly.comb %>% filter(Year == 2017))
+
+}
+
+
+```
+
 ### AIC
 
 Here we compare all of the baselines using [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) model selection. 
@@ -434,6 +461,7 @@ Models are ranked according to how good they are at predicting Lymantria abundan
 
 The column to pay attention to is dAIC, or the difference in AIC between models. A rule of thumb is that models with a dAIC less than 2 are not notably different in their quality, and that models within 6 are similar.
 
+#### Both Years
 
 ```{r Burlap_AIC, echo = F, comment = ""}
 
@@ -452,6 +480,32 @@ write.csv(AIC.burlap, file = "data/CTBurlap32ModelsAIC.csv", row.names = FALSE)
 
 # Display
 AIC.burlap %>%
+    
+    # Print out a table
+    kable(digits = 2)
+
+
+```
+
+#### 2017 Only
+
+```{r Burlap_AIC_2017, echo = F, comment = ""}
+
+##### Compare the models
+AIC.burlap.17 <- AICtab(burlapmodels17, base = TRUE, weights = TRUE) %>% 
+
+    # Convert AIC table to rowname
+    data.frame %>%
+
+    # Make the model rownames into a column
+    rownames_to_column(var = "model")
+
+
+# Write to CSV
+#write.csv(AIC.burlap, file = "data/CTBurlap32ModelsAIC.csv", row.names = FALSE)
+
+# Display
+AIC.burlap.17 %>%
     
     # Print out a table
     kable(digits = 2)
@@ -724,7 +778,38 @@ for (model.score in model.scores) {
 
 ```
 
+
+```{r Egg_Models_2017, echo = F, comment = ""}
+
+
+# Make a new list to hold the groundtruthing models
+eggmodels17 <- list()
+
+# Iterate over the vector of scores, creating a new model predicting
+# lymantria larval abundance from each score.
+for (model.score in model.scores) {
+
+    # Splice in each baseline column name into the model formula
+    model.formula <- as.formula(paste0("EggMasses ~ ", model.score, 
+        " + (1|BlockID/SiteID)"))
+
+    # Print out the model formula, for debugging
+    #print(model.formula)
+
+    # Run a model using each baseline to predict lymantria abundance
+    # Store the resulting model in the models list
+    eggmodels17[[model.score]] <- glmmTMB(model.formula, family = nbinom2, 
+        data = ly.comb %>% filter(Year == 2017))
+
+}
+
+
+```
+
+
 ### AIC
+
+#### Both Years
 
 ```{r Egg_AIC, echo = F, comment = ""}
 
@@ -742,6 +827,32 @@ write.csv(AIC.egg, file = "data/CTEggMasses32ModelsAIC.csv", row.names = FALSE)
 
 # Display
 AIC.egg %>%
+    
+    # Print out a table
+    kable(digits = 2)
+
+
+
+```
+
+#### 2017 Only
+
+```{r Egg_AIC_2017, echo = F, comment = ""}
+
+# Compare the models
+AIC.egg.17 <- AICtab(eggmodels17, base = TRUE, weights = TRUE) %>% 
+
+    # Convert AIC table to rowname
+    data.frame %>%
+
+    # Make the model rownames into a column
+    rownames_to_column(var = "model")
+
+# Write to CSV
+#write.csv(AIC.egg, file = "data/CTEggMasses32ModelsAIC.csv", row.names = FALSE)
+
+# Display
+AIC.egg.17 %>%
     
     # Print out a table
     kable(digits = 2)
