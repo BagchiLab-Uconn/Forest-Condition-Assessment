@@ -44,6 +44,7 @@ knitr::opts_chunk$set(warning = F, message = F, collapse = T, cache = T,
 ```
 
 
+
 ```{r, Database_Data, include = F, eval = F}
 
 library(DBI) # Needed for SQL
@@ -129,7 +130,7 @@ We evaluate the predictive ability of the following:
 * Predictive ability of Landsat condition scores weakens in 2018, the non-outbreak year, but there is still a pattern.
 * Egg masses only predict larval abundance during the outbreak, no relationship in 2018
 
-
+Forest Condition Assessment - Github
 
 
 ```{r Main_Code, include = F, cache = F}
@@ -376,21 +377,6 @@ QPcomb <- Q.scores %>%
 #str(QPcomb)
 
 
-
-
-
-tcg.pred <- expand.grid(
-  
-    # Range of scores from the CT data, adjust as needed
-    #range(ly.comb$m_tcg_2000_2010_h13_full)
-    m_tcg_2000_2010_h13_full = seq(-3.15, 2.1, by = 0.25),
-    
-    # Set the two years
-    Year = c("2017", "2018"),
-    
-    # Model without random factors (the mean random effect)
-    BlockID = NA, SiteID = NA)
-
 ```
 
 ## Quabbin
@@ -526,7 +512,7 @@ r2.quabbin %>%
 # Plot fixed effects
 quabbin.top.param <- plot_model(QuabModBeta[['m_tcg_2005_2015_h13_full']], 
     type = "est", show.values = T, show.p = T, vline.color = "gray60", 
-    transform = NULL, value.offset = 0.2, , 
+    transform = NULL, value.offset = 0.2, value.size = 6, 
     axis.labels = c("Score")) + 
     
     # Add title, axis label
@@ -537,7 +523,7 @@ quabbin.top.param <- plot_model(QuabModBeta[['m_tcg_2005_2015_h13_full']],
 
 
 # Display Plot
-quabbin.top.param
+#quabbin.top.param
 
 
 ```
@@ -590,7 +576,7 @@ quabbin.top.pred <- QuabModBeta[['m_tcg_2005_2015_h13_full']] %>%
 
 
 # Show plot
-quabbin.top.pred
+#quabbin.top.pred
 
 ```
 
@@ -621,7 +607,7 @@ ggdraw() +
 # Plot fixed effects
 quabbin.consensus.param <- plot_model(QuabModBeta[['m_reanalysis']], 
     type = "est", show.values = T, show.p = T, vline.color = "gray60", 
-    transform = NULL, value.offset = 0.2, , 
+    transform = NULL, value.offset = 0.2, value.size = 6,
     axis.labels = c("Score")) + 
     
     # Add title, axis label
@@ -632,7 +618,7 @@ quabbin.consensus.param <- plot_model(QuabModBeta[['m_reanalysis']],
 
 
 # Display Plot
-quabbin.consensus.param
+#quabbin.consensus.param
 
 
 ```
@@ -685,7 +671,7 @@ quabbin.consensus.pred <- QuabModBeta[['m_reanalysis']] %>%
 
 
 # Show plot
-quabbin.consensus.pred
+#quabbin.consensus.pred
 
 ```
 
@@ -1010,7 +996,7 @@ r2.burlap.18 %>%
 
 
 
-### Plots from Top Baselines
+### Plots from Top Baselines (2017/2018)
 
 #### Top Burlap Baseline: ndvi_2000_2010_h13_16d
 
@@ -1020,7 +1006,7 @@ r2.burlap.18 %>%
 # Plot fixed effects
 burlap.top.param <- plot_model(burlapmodels[['m_ndvi_2000_2010_h13_16d']], 
     type = "est", show.values = T, show.p = T, vline.color = "gray60", 
-    transform = NULL, value.offset = 0.2, , 
+    transform = NULL, value.offset = 0.2, value.size = 6, 
     axis.labels = c("Score:Year 2018", "Year 2018", "Score")) + 
     
     # Add title, axis label
@@ -1031,7 +1017,7 @@ burlap.top.param <- plot_model(burlapmodels[['m_ndvi_2000_2010_h13_16d']],
 
 
 # Display Plot
-burlap.top.param
+#burlap.top.param
 
 
 ```
@@ -1090,12 +1076,12 @@ burlap.top.pred <- burlapmodels[['m_ndvi_2000_2010_h13_16d']] %>%
 
 
 # Show plot
-burlap.top.pred
+#burlap.top.pred
 
 ```
 
 
-```{r Burlap_top_Combined, echo = F, comment = "", fig.height = 5, fig.width = 10}
+```{r Burlap_Top_Combined, echo = F, comment = "", fig.height = 5, fig.width = 10}
 
 # Combine plots
 ggdraw() + 
@@ -1121,7 +1107,7 @@ ggdraw() +
 # Plot fixed effects
 burlap.consensus.param <- plot_model(burlapmodels[['m_reanalysis']], 
     type = "est", show.values = T, show.p = T, vline.color = "gray60", 
-    transform = NULL, value.offset = 0.2, , 
+    transform = NULL, value.offset = 0.2, value.size = 6, 
     axis.labels = c("Score:Year 2018", "Year 2018", "Score")) + 
     
     # Add title, axis label
@@ -1132,7 +1118,7 @@ burlap.consensus.param <- plot_model(burlapmodels[['m_reanalysis']],
 
 
 # Display Plot
-burlap.consensus.param
+#burlap.consensus.param
 
 
 ```
@@ -1192,7 +1178,7 @@ burlap.consensus.pred <- burlapmodels[['m_reanalysis']] %>%
 
 
 # Show plot
-burlap.consensus.pred
+#burlap.consensus.pred
 
 
 
@@ -1215,6 +1201,107 @@ ggdraw() +
 
 
 ```
+
+
+
+### Plots from Top Baselines (2017 only)
+
+#### Top Burlap Baseline: sr_2000_2010_h13_16d
+
+
+```{r Burlap_Top_Param_2017, echo = F, comment = ""}
+
+# Plot fixed effects
+burlap.top.param.17 <- plot_model(burlapmodels17[['m_sr_2000_2010_h13_16d']], 
+    type = "est", show.values = T, show.p = T, vline.color = "gray60", 
+    transform = NULL, value.offset = 0.2, value.size = 6, 
+    axis.labels = c("Score")) + 
+    
+    # Add title, axis label
+    labs(y = "Parameter Estimate", title = "Baseline: sr_2000_2010_h13_16d") +
+
+    # Add theme
+    ggplot.theme
+
+
+# Display Plot
+#burlap.top.param.17
+
+
+```
+
+```{r Burlap_Top_Pred_2017, echo = F, comment = ""}
+
+# Make a dummy dataset for interaction/prediction plots for Burlap larva top model
+burlap.top.17 <- expand.grid(
+    
+    # Range of scoresfrom the CT data, adjust as needed
+    #range(ly.comb$m_sr_2000_2010_h13_16d[ly.comb$Year == 2017])
+    m_sr_2000_2010_h13_16d = seq(-2.95, 1.75, by = 0.1),
+    
+    # Model without random factors (the mean random effect)
+    BlockID = NA, SiteID = NA) %>%
+  
+    # Augment with fitted values and confidence intervals
+    augment.conf(burlapmodels17[['m_sr_2000_2010_h13_16d']])
+
+
+# Make a prediction plot for burlap top model
+burlap.top.pred.17 <- burlapmodels17[['m_sr_2000_2010_h13_16d']] %>%
+  
+    # Augment the actual data, adding fitted values and residuals
+    augment(type.predict = "response") %>%
+    
+    # Plot defoliation against model fitted values of abundance
+    ggplot(aes(x = m_sr_2000_2010_h13_16d, y = .fitted)) +
+      
+        # Add model prediction trend line and 95% confidence intervals
+        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, 
+            alpha = 0.15, stat = "identity", data = burlap.top.17) +
+        
+        # Add fitted data values as scatterplot
+        geom_point() +
+        
+        # Add errorbars to the fitted values equal to the residuals
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
+        
+        # Add axis labels
+        labs(x = "Defoliation Score", y = "Fitted Larval Abundance", 
+            title = "Baseline: sr_2000_2010_h13_16d") +
+    
+        # Put legend inside the plot panel
+        theme(legend.position = c(0.8, 0.8)) +
+        
+        # Add Theme
+        ggplot.theme
+
+# Show plot
+#burlap.top.pred.17
+
+```
+
+
+```{r Burlap_Top_Combined_2017, echo = F, comment = "", fig.height = 5, fig.width = 10}
+
+# Combine plots
+ggdraw() + 
+    
+    # Add the two plots
+    draw_plot(burlap.top.param.17 + ggtitle(""), 0, 0, 0.4, 0.95) +
+    draw_plot(burlap.top.pred.17 + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
+    
+    # Add subplot labels
+    draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+  
+    # Add title
+    draw_plot_label("Baseline: sr_2000_2010_h13_16d", 0.1, 1, size = 20)
+
+
+```
+
+#### Consensus Baseline: 
+
+
 
 
 ## Egg Mass Models
@@ -1359,7 +1446,6 @@ AIC.egg.17 %>%
     kable(digits = 2)
 
 
-r2(eggmodels17[['m_tcg_2000_2010_h12_full']])
 ```
 
 #### 2018 Only
@@ -1517,17 +1603,17 @@ r2.egg.18 %>%
 ```
 
 
-### Plots from Top Baselines
+### Plots from Top Baselines (2017/2018)
 
-#### sr_2000-2010_h13_16d
+#### Top Egg Mass Baseline: sr_2000-2010_h13_16d
 
 
-```{r Egg_sr_Param, echo = F, comment = ""}
+```{r Egg_Top_Param, echo = F, comment = ""}
 
 # Plot fixed effects
-egg.sr.param <- plot_model(eggmodels[['m_sr_2000_2010_h13_16d']], 
+egg.top.param <- plot_model(eggmodels[['m_sr_2000_2010_h13_16d']], 
     type = "est", show.values = T, show.p = T, vline.color = "gray60", 
-    transform = NULL, value.offset = 0.2, , 
+    transform = NULL, value.offset = 0.2, value.size = 6, 
     axis.labels = c("Score:Year 2018", "Year 2018", "Score")) + 
     
     # Add title, axis label
@@ -1538,23 +1624,33 @@ egg.sr.param <- plot_model(eggmodels[['m_sr_2000_2010_h13_16d']],
 
 
 # Display Plot
-egg.sr.param
+#egg.top.param
 
 
 ```
 
-```{r Egg_sr_Pred, echo = F, comment = ""}
+```{r Egg_Top_Pred, echo = F, comment = ""}
 
 
-# Make a dummy sr dataset for interaction/prediction plots
-egg.sr <- sr.pred %>%
+# Make a dummy dataset for interaction/prediction plots for egg mass top model
+egg.top <- expand.grid(
     
+    # Range of scoresfrom the CT data, adjust as needed
+    #range(ly.comb$m_sr_2000_2010_h13_16d)
+    m_sr_2000_2010_h13_16d = seq(-2.95, 2.3, by = 0.25),
+    
+    # Set the two years
+    Year = c("2017", "2018"),
+    
+    # Model without random factors (the mean random effect)
+    BlockID = NA, SiteID = NA) %>%
+  
     # Augment with fitted values and confidence intervals
     augment.conf(eggmodels[['m_sr_2000_2010_h13_16d']])
 
 
-# Make a prediction plot for sr
-egg.sr.pred <- eggmodels[['m_sr_2000_2010_h13_16d']] %>%
+# Make a prediction plot for egg mass top model
+egg.top.pred <- eggmodels[['m_sr_2000_2010_h13_16d']] %>%
   
     # Augment the actual data, adding fitted values and residuals
     augment(type.predict = "response") %>%
@@ -1563,8 +1659,8 @@ egg.sr.pred <- eggmodels[['m_sr_2000_2010_h13_16d']] %>%
     ggplot(aes(x = m_sr_2000_2010_h13_16d, y = .fitted, color = Year)) +
       
         # Add model prediction trend line and 95% confidence intervals
-        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
-            stat = "identity", data = egg.sr) +
+        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, 
+            alpha = 0.15, stat = "identity", data = egg.top) +
         
         # Add fitted data values as scatterplot
         geom_point() +
@@ -1588,19 +1684,19 @@ egg.sr.pred <- eggmodels[['m_sr_2000_2010_h13_16d']] %>%
 
 
 # Show plot
-egg.sr.pred
+#egg.top.pred
 
 ```
 
 
-```{r Egg_sr_Combined, echo = F, comment = "", fig.height = 5, fig.width = 10}
+```{r Egg_Top_Combined, echo = F, comment = "", fig.height = 5, fig.width = 10}
 
 # Combine plots
 ggdraw() + 
     
     # Add the two plots
-    draw_plot(egg.sr.param + ggtitle(""), 0, 0, 0.4, 0.95) +
-    draw_plot(egg.sr.pred + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
+    draw_plot(egg.top.param + ggtitle(""), 0, 0, 0.4, 0.95) +
+    draw_plot(egg.top.pred + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
     
     # Add subplot labels
     draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
@@ -1611,52 +1707,64 @@ ggdraw() +
 
 ```
 
-#### tcg_2000-2010_h13_full
+
+#### Consensus Baseline: 
+
+### Plots from Top Baselines (2017 only)
+
+### Top Egg Mass Baseline: tcg_2000_2010_h12_full
 
 
-```{r Egg_tcg_Param, echo = F, comment = ""}
+```{r Egg_Top_Param_2017, echo = F, comment = ""}
 
 # Plot fixed effects
-egg.tcg.param <- plot_model(eggmodels[['m_tcg_2000_2010_h13_full']], 
+egg.top.param.17 <- plot_model(eggmodels17[['m_tcg_2000_2010_h12_full']], 
     type = "est", show.values = T, show.p = T, vline.color = "gray60", 
-    transform = NULL, value.offset = 0.2, , 
-    axis.labels = c("Score:Year 2018", "Year 2018", "Score")) + 
+    transform = NULL, value.offset = 0.2, value.size = 6, 
+    axis.labels = c("Score")) + 
     
     # Add title, axis label
-    labs(y = "Parameter Estimate", title = "Baseline: tcg_2000-2010_h13_full") +
+    labs(y = "Parameter Estimate", title = "Baseline: tcg_2000_2010_h12_full") +
 
     # Add theme
     ggplot.theme
 
 
 # Display Plot
-egg.tcg.param
+#egg.top.param.17
 
 
 ```
 
-```{r Egg_tcg_Pred, echo = F, comment = ""}
+```{r Egg_Top_Pred_2017, echo = F, comment = ""}
 
 
-# Make a dummy tcg dataset for interaction/prediction plots
-egg.tcg <- tcg.pred %>%
+# Make a dummy dataset for interaction/prediction plots for egg mass top model
+egg.top.17 <- expand.grid(
     
+    # Range of scoresfrom the CT data, adjust as needed
+    #range(ly.comb$m_tcg_2000_2010_h12_full[ly.comb$Year == 2017])
+    m_tcg_2000_2010_h12_full = seq(-3.35, 0.4, by = 0.25),
+    
+    # Model without random factors (the mean random effect)
+    BlockID = NA, SiteID = NA) %>%
+  
     # Augment with fitted values and confidence intervals
-    augment.conf(eggmodels[['m_tcg_2000_2010_h13_full']])
+    augment.conf(eggmodels17[['m_tcg_2000_2010_h12_full']])
 
 
-# Make a prediction plot for sr
-egg.tcg.pred <- eggmodels[['m_tcg_2000_2010_h13_full']] %>%
+# Make a prediction plot for egg mass top model
+egg.top.pred.17 <- eggmodels17[['m_tcg_2000_2010_h12_full']] %>%
   
     # Augment the actual data, adding fitted values and residuals
     augment(type.predict = "response") %>%
     
     # Plot defoliation against model fitted values of abundance
-    ggplot(aes(x = m_tcg_2000_2010_h13_full, y = .fitted, color = Year)) +
+    ggplot(aes(x = m_tcg_2000_2010_h12_full, y = .fitted)) +
       
         # Add model prediction trend line and 95% confidence intervals
-        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
-            stat = "identity", data = egg.tcg) +
+        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, 
+            alpha = 0.15, stat = "identity", data = egg.top.17) +
         
         # Add fitted data values as scatterplot
         geom_point() +
@@ -1664,13 +1772,9 @@ egg.tcg.pred <- eggmodels[['m_tcg_2000_2010_h13_full']] %>%
         # Add errorbars to the fitted values equal to the residuals
         geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
         
-        # Custom colors
-        scale_color_manual(values = c("black", "blue")) + 
-        scale_fill_manual(values = c("black", "blue")) +
-  
         # Add axis labels
         labs(x = "Defoliation Score", y = "Fitted Egg Masses", 
-            title = "Baseline: tcg_2000-2010_h13_full") +
+            title = "Baseline: tcg_2000_2010_h12_full") +
     
         # Put legend inside the plot panel
         theme(legend.position = c(0.8, 0.8)) +
@@ -1680,32 +1784,34 @@ egg.tcg.pred <- eggmodels[['m_tcg_2000_2010_h13_full']] %>%
 
 
 # Show plot
-egg.tcg.pred
-
-
+#egg.top.pred.17
 
 ```
 
-```{r Egg_tcg_Combined, echo = F, comment = "", fig.height = 5, fig.width = 10}
+
+```{r Egg_Top_Combined_2017, echo = F, comment = "", fig.height = 5, fig.width = 10}
 
 # Combine plots
 ggdraw() + 
     
     # Add the two plots
-    draw_plot(egg.tcg.param + ggtitle(""), 0, 0, 0.4, 0.95) +
-    draw_plot(egg.tcg.pred + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
+    draw_plot(egg.top.param.17 + ggtitle(""), 0, 0, 0.4, 0.95) +
+    draw_plot(egg.top.pred.17 + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
     
     # Add subplot labels
     draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
   
     # Add title
-    draw_plot_label("Baseline: tcg_2000-2010_h13_full", 0.1, 1, size = 20)
+    draw_plot_label("Baseline: sr_2000-2010_h13_16d", 0.1, 1, size = 20)
 
 
 ```
 
+#### Consensus Baseline: 
 
-### Egg Mass Predictor
+
+
+## Egg Mass Predictor
 
 ```{r Egg_Predictor_Model, echo = F, comment = ""}
 
@@ -1717,7 +1823,7 @@ m_egg.pred <- glmmTMB(Abundance ~ EggMasses * Year + (1|BlockID/SiteID),
 
 ```
 
-#### AIC
+### AIC
 
 Here we compare the top defoliation score models with one using egg mass counts to predict Lymantria larval abundance using [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) model selection. 
 
@@ -1745,7 +1851,7 @@ AICtab(m_egg.pred,
 
 ```
 
-#### R<sup>2</sup>
+### R<sup>2</sup>
 
 Here, we are calculating the proportion of variance in the Lymantria abundance data that is explained by each model. 
 
@@ -1763,7 +1869,7 @@ r2(m_egg.pred)
 
 ```
 
-#### Plots
+### Plots
 
 
 
@@ -1773,7 +1879,7 @@ r2(m_egg.pred)
 # Plot fixed effects
 egg.predictor.param <- plot_model(m_egg.pred, 
     type = "est", show.values = T, show.p = T, vline.color = "gray60", 
-    transform = NULL, value.offset = 0.2 , 
+    transform = NULL, value.offset = 0.2,
     axis.labels = c("Egg Masses:Year 2018", "Year 2018", "Egg Masses")) + 
     
     # Add title, axis label
@@ -1785,7 +1891,7 @@ egg.predictor.param <- plot_model(m_egg.pred,
 
 
 # Display Plot
-egg.predictor.param
+#egg.predictor.param
 
 
 ```
@@ -1844,7 +1950,7 @@ egg.predictor.pred <- m_egg.pred %>%
 
 
 # Show plot
-egg.predictor.pred
+#egg.predictor.pred
 
 ```
 
@@ -1867,8 +1973,119 @@ ggdraw() +
 
 ```
 
+## Combined Panel Plots
 
-## Graphs
+### Top
+
+```{r Panel_Plot_Top, echo = F, comment = "", fig.height = 12, fig.width = 8}
+
+# Combine plots
+ggdraw() + 
+    
+    # Add the Quabbin plots
+    draw_plot(quabbin.top.param + ggtitle(""), 0, 0.66, 0.4, 0.33) +
+    draw_plot(quabbin.top.pred, 0.4, 0.66, 0.6, 0.33) + 
+  
+    # Add the burlap larva plots
+    draw_plot(burlap.top.param.17 + ggtitle(""), 0, 0.33, 0.4, 0.33) +
+    draw_plot(burlap.top.pred.17, 0.4, 0.33, 0.6, 0.33) + 
+  
+    # Add the egg mass plots
+    draw_plot(egg.top.param.17 + ggtitle(""), 0, 0, 0.4, 0.33) +
+    draw_plot(egg.top.pred.17, 0.4, 0, 0.6, 0.33) +
+    
+    # Add subplot labels
+    draw_plot_label(c("A", "B", "C", "D", "E", "F"), 
+        c(0.04, 0.37, 0.04, 0.37, 0.04, 0.37), 
+        c(0.99, 0.99, 0.66, 0.66, 0.33, 0.33), size = 24)
+  
+    # Add title
+    #draw_plot_label("Baseline: sr_2000-2010_h13_16d", 0.1, 1, size = 20)
+
+
+```
+
+
+```{r Combined_Param_Plot_Top, echo = F, comment = ""}
+
+burlap.coef <- tidy(burlapmodels17[['m_sr_2000_2010_h13_16d']]) %>% 
+    filter(term == 'm_sr_2000_2010_h13_16d') %>% 
+    mutate(data = "CT Larval Abundance\nsr_2000_2010_h13_16d")
+
+egg.coef <- tidy(burlapmodels17[['m_tcg_2000_2010_h12_full']]) %>% 
+    filter(term == 'm_tcg_2000_2010_h12_full') %>% 
+    mutate(data = "CT Egg Masses\ntcg_2000_2010_h12_full")
+
+quabbin.coef <- tidy(QuabModBeta[['m_tcg_2005_2015_h13_full']]) %>% 
+    filter(term == 'm_tcg_2005_2015_h13_full') %>% 
+    mutate(data = "Quabbin Defoliation\ntcg_2005_2015_h13_full")
+
+
+combined.param.top <- burlap.coef %>% rbind(egg.coef, quabbin.coef) %>%
+  
+    mutate(
+        lower = estimate - qnorm(0.025) * std.error,
+        upper = estimate + qnorm(0.025) * std.error,
+        sig = case_when(p.value < 0.001 ~ "***", p.value < 0.01 ~ "**", 
+            p.value < 0.05 ~ "*", TRUE ~ ""),
+        ) %>% data.frame %>% 
+    ggplot(aes(x = estimate, y = data)) +
+        
+        # Add forest plot
+        geom_pointrange(aes(xmin = lower, xmax = upper), color = "red") +
+  
+        # Add a vertical line at zero
+        geom_vline(aes(xintercept = 0), color = "gray60", size = 1) +
+  
+        # Add the parameter estimate numbers, with significance
+        geom_text(aes(label = paste(round(estimate, 2), sig)), 
+            nudge_y = 0.2, color = "red") +
+  
+        labs(x = "Parameter Estimate", y = "") +
+  
+        ggplot.theme
+
+
+
+```
+
+
+```{r Panel_Plot_Top_Alt, echo = F, comment = "", fig.height = 12, fig.width = 6}
+
+
+# Combine plots
+ggdraw() + 
+    
+    # Add the Quabbin plot
+    draw_plot(quabbin.top.pred + labs(x = "", y = "Ground Defoliation"), 
+        0.0, 0.73, 1, 0.25) + 
+  
+    # Add the burlap larva plot
+    draw_plot(burlap.top.pred.17 + labs(x = "", y = "Larval Abundance"), 
+        0.0, 0.49, 1, 0.25) + 
+  
+    # Add the egg mass plot
+    draw_plot(egg.top.pred.17 + labs(y = "Egg Masses"), 0.0, 0.26, 1, 0.25) +
+    
+    # Add the parameter forest plot
+    draw_plot(combined.param.top, 0.0, 0.0, 1, 0.25) +
+  
+    # Add subplot labels
+    draw_plot_label(c("A", "B", "C", "D"), 
+        c(0.0, 0.0, 0.0, 0.0), 
+        c(1, 0.76, 0.52, 0.27), size = 24)
+  
+    # Add title
+    #draw_plot_label("Baseline: sr_2000-2010_h13_16d", 0.1, 1, size = 20)
+
+```
+
+
+### Consensus
+
+
+
+### Graphs
 
 Let's compare the old baseline model (reanalysis) to the new model with the same parameters (tasseled cap greenness, 2000-2010, h13 harmonics, full dataset), and see what has changed in the distribution of scores
 
@@ -1900,78 +2117,3 @@ ly.comb %>%
 
 
 ```
-
-#### Compare condition scores between baselines
-
-Here we are looking at how well condition scores for individual plots agree between the original reanalysis data product and the new condition scores.
-
-A lot of scatter means that at a point level, things are substantially different.
-
-Red lines are slope = 1. In both cases, Val's new models have less negative condition scores (values shifted up relative to the reanalysis ones). There's not much change in slope, which is good. 
-
-```{r Baseline_Comp, echo = F, comment = ""}
-
-# Compare the two best new model scores to the original reanalysis scores
-ly.comb %>%
-
-    # take the two best new models and convert them from columns to rows
-    pivot_longer(cols = c(m_sr_2000_2010_h13_16d, m_tcg_2000_2010_h13_full), 
-        names_to = "model", values_to = "score") %>%
-
-    # Construct the plot
-    ggplot(aes(x = m_reanalysis, y = score)) + 
-
-        # Make facets for each model
-        facet_wrap(~ model) + 
-
-        # Add scatterplot, with larger points
-        geom_point(size = 2) + 
-
-        # Add a trendline linear smoother
-        geom_smooth(method = "lm") + 
-
-        geom_abline(slope=1, color = "red") +
-
-        # Add title and y-axis label
-        labs(title = "Compare Reanalysis to New Models", y = "New Score") + 
-
-        # Theme the graph
-        theme_cowplot() + 
-        ggplot.theme
-
-```
-
-
-#### Condition Score Distributions
-
-Another interesting comparison is to compare the distribution of condition scores for the same year between Val's models
-
-There's some variation in distribution shape, spread, and how negative scores are between baselines. NDVI is consistently less negative.
-
-```{r Score_Distributions, echo = F, comment = ""}
-
-# Plot histograms of the score distributions for each model
-ly.comb %>% filter(Year == 2017) %>%
-
-    # take all of models and convert them from columns to rows
-    pivot_longer(cols = starts_with("m_"), 
-        names_to = "model", values_to = "score") %>%
-
-        # Construct the plot
-        ggplot(aes(x = score)) + 
-
-            # Make facets for each model
-            facet_wrap(~ model, nrow = 2) + 
-
-            # Add a histogram layer
-            geom_histogram(bins = 30, fill = "lightblue", color = "black") +
-
-            # Add title and x-axis label
-            labs(title = "2017 Distribution", x = "Condition Score") +
-
-            # Theme the graph
-            theme_cowplot() + 
-            ggplot.theme
-
-```
-

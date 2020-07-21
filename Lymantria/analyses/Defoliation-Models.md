@@ -25,11 +25,17 @@ July 21, 2020
       - [R<sup>2</sup>](#r2-1)
           - [2017 Only](#only-2)
           - [2018 Only](#only-3)
-      - [Plots from Top Baselines](#plots-from-top-baselines-1)
+      - [Plots from Top Baselines
+        (2017/2018)](#plots-from-top-baselines-20172018)
           - [Top Burlap Baseline:
             ndvi\_2000\_2010\_h13\_16d](#top-burlap-baseline-ndvi_2000_2010_h13_16d)
           - [Consensus Baseline:
             reanalysis](#consensus-baseline-reanalysis-1)
+      - [Plots from Top Baselines (2017
+        only)](#plots-from-top-baselines-2017-only)
+          - [Top Burlap Baseline:
+            sr\_2000\_2010\_h13\_16d](#top-burlap-baseline-sr_2000_2010_h13_16d)
+          - [Consensus Baseline:](#consensus-baseline)
   - [Egg Mass Models](#egg-mass-models)
       - [AIC](#aic-2)
           - [Both Years](#both-years-1)
@@ -38,17 +44,24 @@ July 21, 2020
       - [R<sup>2</sup>](#r2-2)
           - [2017 Only](#only-6)
           - [2018 Only](#only-7)
-      - [Plots from Top Baselines](#plots-from-top-baselines-2)
-          - [sr\_2000-2010\_h13\_16d](#sr_2000-2010_h13_16d)
-          - [tcg\_2000-2010\_h13\_full](#tcg_2000-2010_h13_full)
-      - [Egg Mass Predictor](#egg-mass-predictor)
-          - [AIC](#aic-3)
-          - [R<sup>2</sup>](#r2-3)
-          - [Plots](#plots)
-  - [Graphs](#graphs)
-      - [Compare condition scores between
-        baselines](#compare-condition-scores-between-baselines)
-      - [Condition Score Distributions](#condition-score-distributions)
+      - [Plots from Top Baselines
+        (2017/2018)](#plots-from-top-baselines-20172018-1)
+          - [Top Egg Mass Baseline:
+            sr\_2000-2010\_h13\_16d](#top-egg-mass-baseline-sr_2000-2010_h13_16d)
+          - [Consensus Baseline:](#consensus-baseline-1)
+      - [Plots from Top Baselines (2017
+        only)](#plots-from-top-baselines-2017-only-1)
+      - [Top Egg Mass Baseline:
+        tcg\_2000\_2010\_h12\_full](#top-egg-mass-baseline-tcg_2000_2010_h12_full)
+          - [Consensus Baseline:](#consensus-baseline-2)
+  - [Egg Mass Predictor](#egg-mass-predictor)
+      - [AIC](#aic-3)
+      - [R<sup>2</sup>](#r2-3)
+      - [Plots](#plots)
+  - [Combined Panel Plots](#combined-panel-plots)
+      - [Top](#top)
+      - [Consensus](#consensus)
+      - [Graphs](#graphs)
 
 ## Overview
 
@@ -90,6 +103,8 @@ mass abundance predicting larval Lymantria abundance
     non-outbreak year, but there is still a pattern.
   - Egg masses only predict larval abundance during the outbreak, no
     relationship in 2018
+
+Forest Condition Assessment - Github
 
 ## Quabbin
 
@@ -203,17 +218,9 @@ the canopy defoliation.
 
 #### Top Quabbin Baseline: tcg\_2005\_2015\_h13\_full
 
-![](Defoliation-Models_files/figure-gfm/Quabbin_Top_Param-1.png)<!-- -->
-
-![](Defoliation-Models_files/figure-gfm/Quabbin_Top_Pred-1.png)<!-- -->
-
 ![](Defoliation-Models_files/figure-gfm/Quabbin_Top_Combined-1.png)<!-- -->
 
 #### Consensus Baseline: reanalysis
-
-![](Defoliation-Models_files/figure-gfm/Quabbin_Consensus_Param-1.png)<!-- -->
-
-![](Defoliation-Models_files/figure-gfm/Quabbin_Consensus_Pred-1.png)<!-- -->
 
 ![](Defoliation-Models_files/figure-gfm/Quabbin_Consensus_Combined-1.png)<!-- -->
 
@@ -482,23 +489,23 @@ the two ndvi\_2000-2010\_h13 baselines.
 | m\_sr\_2005\_2015\_h12\_full   |         0.00 |            0.80 |
 | m\_tcg\_2005\_2015\_h12\_full  |         0.00 |            0.80 |
 
-### Plots from Top Baselines
+### Plots from Top Baselines (2017/2018)
 
 #### Top Burlap Baseline: ndvi\_2000\_2010\_h13\_16d
 
-![](Defoliation-Models_files/figure-gfm/Burlap_Top_Param-1.png)<!-- -->
-
-![](Defoliation-Models_files/figure-gfm/Burlap_Top_Pred-1.png)<!-- -->
-
-![](Defoliation-Models_files/figure-gfm/Burlap_top_Combined-1.png)<!-- -->
+![](Defoliation-Models_files/figure-gfm/Burlap_Top_Combined-1.png)<!-- -->
 
 #### Consensus Baseline: reanalysis
 
-![](Defoliation-Models_files/figure-gfm/Burlap_Consensus_Param-1.png)<!-- -->
-
-![](Defoliation-Models_files/figure-gfm/Burlap_Consensus_Pred-1.png)<!-- -->
-
 ![](Defoliation-Models_files/figure-gfm/Burlap_Consensus_Combined-1.png)<!-- -->
+
+### Plots from Top Baselines (2017 only)
+
+#### Top Burlap Baseline: sr\_2000\_2010\_h13\_16d
+
+![](Defoliation-Models_files/figure-gfm/Burlap_Top_Combined_2017-1.png)<!-- -->
+
+#### Consensus Baseline:
 
 ## Egg Mass Models
 
@@ -591,12 +598,6 @@ similar.
 | m\_ndvi\_2000\_2010\_h12\_full | 557.51 | 14.56 |  5 |   0.00 |
 | m\_ndvi\_2005\_2015\_h12\_full | 561.32 | 18.37 |  5 |   0.00 |
 | m\_ndvi\_2005\_2015\_h12\_16d  | 561.96 | 19.01 |  5 |   0.00 |
-
-    Random effect variances not available. Returned R2 does not account for random effects.
-    # R2 for Mixed Models
-    
-      Conditional R2: NA
-         Marginal R2: 0.764
 
 #### 2018 Only
 
@@ -798,27 +799,25 @@ the bottom six NDVI models.
 | m\_ndvi\_2005\_2015\_h12\_16d  |         0.00 |            0.79 |
 | m\_ndvi\_2005\_2015\_h12\_full |         0.00 |            0.78 |
 
-### Plots from Top Baselines
+### Plots from Top Baselines (2017/2018)
 
-#### sr\_2000-2010\_h13\_16d
+#### Top Egg Mass Baseline: sr\_2000-2010\_h13\_16d
 
-![](Defoliation-Models_files/figure-gfm/Egg_sr_Param-1.png)<!-- -->
+![](Defoliation-Models_files/figure-gfm/Egg_Top_Combined-1.png)<!-- -->
 
-![](Defoliation-Models_files/figure-gfm/Egg_sr_Pred-1.png)<!-- -->
+#### Consensus Baseline:
 
-![](Defoliation-Models_files/figure-gfm/Egg_sr_Combined-1.png)<!-- -->
+### Plots from Top Baselines (2017 only)
 
-#### tcg\_2000-2010\_h13\_full
+### Top Egg Mass Baseline: tcg\_2000\_2010\_h12\_full
 
-![](Defoliation-Models_files/figure-gfm/Egg_tcg_Param-1.png)<!-- -->
+![](Defoliation-Models_files/figure-gfm/Egg_Top_Combined_2017-1.png)<!-- -->
 
-![](Defoliation-Models_files/figure-gfm/Egg_tcg_Pred-1.png)<!-- -->
+#### Consensus Baseline:
 
-![](Defoliation-Models_files/figure-gfm/Egg_tcg_Combined-1.png)<!-- -->
+## Egg Mass Predictor
 
-### Egg Mass Predictor
-
-#### AIC
+### AIC
 
 Here we compare the top defoliation score models with one using egg mass
 counts to predict Lymantria larval abundance using
@@ -840,7 +839,7 @@ similar.
 | reanalysis                        | 2113.65 | 15.88 |  7 |      0 |
 | Predict abundance with egg masses | 2123.20 | 25.43 |  7 |      0 |
 
-#### R<sup>2</sup>
+### R<sup>2</sup>
 
 Here, we are calculating the proportion of variance in the Lymantria
 abundance data that is explained by each model.
@@ -864,15 +863,21 @@ Lymantria larva.
       Conditional R2: 0.760
          Marginal R2: 0.555
 
-#### Plots
-
-![](Defoliation-Models_files/figure-gfm/Egg_Predictor_Param-1.png)<!-- -->
-
-![](Defoliation-Models_files/figure-gfm/Egg_Predictor_Pred-1.png)<!-- -->
+### Plots
 
 ![](Defoliation-Models_files/figure-gfm/Egg_Predictor_Combined-1.png)<!-- -->
 
-## Graphs
+## Combined Panel Plots
+
+### Top
+
+![](Defoliation-Models_files/figure-gfm/Panel_Plot_Top-1.png)<!-- -->
+
+![](Defoliation-Models_files/figure-gfm/Panel_Plot_Top_Alt-1.png)<!-- -->
+
+### Consensus
+
+### Graphs
 
 Let’s compare the old baseline model (reanalysis) to the new model with
 the same parameters (tasseled cap greenness, 2000-2010, h13 harmonics,
@@ -881,28 +886,3 @@ full dataset), and see what has changed in the distribution of scores
 ![](Defoliation-Models_files/figure-gfm/New_Baseline_Comparison_2017-1.png)<!-- -->
 
 ![](Defoliation-Models_files/figure-gfm/New_Baseline_Comparison_2018-1.png)<!-- -->
-
-#### Compare condition scores between baselines
-
-Here we are looking at how well condition scores for individual plots
-agree between the original reanalysis data product and the new condition
-scores.
-
-A lot of scatter means that at a point level, things are substantially
-different.
-
-Red lines are slope = 1. In both cases, Val’s new models have less
-negative condition scores (values shifted up relative to the reanalysis
-ones). There’s not much change in slope, which is good.
-
-![](Defoliation-Models_files/figure-gfm/Baseline_Comp-1.png)<!-- -->
-
-#### Condition Score Distributions
-
-Another interesting comparison is to compare the distribution of
-condition scores for the same year between Val’s models
-
-There’s some variation in distribution shape, spread, and how negative
-scores are between baselines. NDVI is consistently less negative.
-
-![](Defoliation-Models_files/figure-gfm/Score_Distributions-1.png)<!-- -->
