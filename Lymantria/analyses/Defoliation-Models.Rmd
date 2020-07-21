@@ -1,5 +1,5 @@
 ---
-title: "CT Defoliation Model Comparison"
+title: "Defoliation Model Comparison"
 author: "James Mickley and Audrey Barker Plotkin"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 graphics: yes
@@ -102,16 +102,20 @@ write.csv(burlap, file = "data/burlap-surveys.csv", row.names = F)
 
 ## Overview
 
+This analysis compares Val Pasquarella's defoliation data from Landsat satellite to the following:
 
-This analysis compares Val Pasquarella's defoliation data from Landsat satellite to 
+1 Defoliation data collected in late September 2017 from 483 points within 6 'hotspots' in the Quabbin Watershed Forest (Rich MacLean, DCR Watershed Forester field data lead).
+2 Lymantria larval and egg mass abundance data collected in 2017 and 2018 from 12 trees each in 32 forest fragments of varying size in Eastern Connecticut. 
 
-Here, we examine how varying the following components of the Landsat change-in-condition model affect how well that predicts defoliation on the ground:
+Here, we examine how varying the following components of the Landsat change-in-condition model affect how well that predicts defoliation or Lymantria abundance on the ground:
+
 * Spectral index (TGC, NDVI, SR, EVI)
 * Baseline period (2000-2010, 2005-2015)
 * Harmonic periods (12- and -6 month, 12- and 4-month)
 * Data included (all available data which varies over time, consistent 16d interval)
 
 We evaluate the predictive ability of the following:
+* Landsat condition scores predicting the proportion of canopy defoliated
 * Landsat condition scores predicting larval Lymantria abundance
 * Landsat condition scores predicting Lymantria egg mass abundance
 * Egg mass abundance predicting larval Lymantria abundance
@@ -151,14 +155,21 @@ library(knitr) # Needed for kable()
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 # Import datasets
+
+# Read in CT Lymantria larval abundance and egg mass data
 burlap <- read.csv("data/burlap-surveys.csv")
 
-# Read in mean condition scores for 2017
+# Read in mean condition scores for 2017 CT plots
 scores.2017 <- read.csv("data/plots_ct_burlap_2017_v3-0.csv")
 
-# Read in mean condtion scores for 2018
+# Read in mean condtion scores for 2018 CT plots
 scores.2018 <- read.csv("data/plots_ct_burlap_2018_v3-0.csv")
 
+# Read in Quabbin Hotplot defoliation data
+Qplot <- read.csv("data/HotPlotMeans.csv")
+
+# Read in mean condition scores for 2017 Quabbin plots
+Q.scores <- read.csv("data/plots_ma_quabbin_2017_v3-0.csv")
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # @@@@@ ggPlot Theme
@@ -272,7 +283,7 @@ augment.conf <- function(data, model, level = 0.95) {
 ```{r Data_Wrangling, echo = F, comment = ""}
 
 # Combine the mean condition scores from 2017 and 2018
-mean.scores <- scores.2017 %>%
+CT.scores <- scores.2017 %>%
   
     # Add 2018 scores
     rbind(scores.2018) %>%
@@ -345,15 +356,24 @@ ly.point <- ly %>%
     data.frame()
 
 
-# Combine datasets using a join on both the PointID and Year columns
-ly.comb <- mean.scores %>% 
+# Combine CT datasets using a join on both the PointID and Year columns
+ly.comb <- CT.scores %>% 
 
     # Join the datasets together
     right_join(ly.point, by = c("Year", "PointID"))
 
-# Take a peek at the combined dataset
+# Take a peek at the combined CT dataset
 str(ly.comb)
 
+
+# Combine the Quabbin datasets using a join on the hotplot column
+QPcomb <- Q.scores %>%
+
+    # Join the datasets together
+    right_join(Qplot, by = c("hotplot"))
+
+# Take a peek at the combined dataset
+str(QPcomb)
 
 
 # Make a dummy sr dataset for interaction/prediction plots
@@ -384,7 +404,114 @@ tcg.pred <- expand.grid(
 
 ```
 
-## Burlap Larva
+## Quabbin
+
+### Models
+
+```{r Quabbin_Models, echo = F, comment = ""}
+
+##### Quabbin Groundtruthing Models #####
+
+# Make a vector containing column names of all of the different baseline models
+model.scores <- ly.comb %>% 
+
+    # Select all the columns that start with score_
+    select(starts_with("m_")) %>% 
+
+    # Get the column names
+    names()
+
+
+# Make a new list to hold the groundtruthing models
+QuabModBeta <- list()
+
+# Iterate over the vector of scores, creating a new model predicting
+# amount of defoliation abundance from each score.
+for (model.score in model.scores) {
+
+    # Splice in each baseline column name into the model formula
+    model.formula <- as.formula(paste0("MeanDef ~ ", model.score, 
+        " + (1|HotSpot)"))
+
+    # Print out the model formula, for debugging
+    print(model.formula)
+
+    # Run a model using each baseline to predict defoliation
+    # Store the resulting model in the models list
+    QuabModBeta[[model.score]] <- glmmTMB(model.formula, 
+        family = beta_family(link = "logit"), data = QPcomb)
+
+}
+
+
+```
+
+### AIC
+
+```{r Quabbin_AIC, echo = F, comment = ""}
+
+##### Compare the models
+AIC.quabbin <- AICtab(QuabModBeta, base = TRUE, weights = TRUE) %>% 
+
+    # Convert AIC table to rowname
+    data.frame %>%
+
+    # Make the model rownames into a column
+    rownames_to_column(var = "model")
+
+
+# Write to CSV
+write.csv(AIC.quabbin, file = "data/QuabAICv3_0.csv", row.names = FALSE)
+
+# Display
+AIC.quabbin %>%
+    
+    # Print out a table
+    kable(digits = 2)
+
+
+```
+
+### R<sup>2</sup>
+
+```{r Quabbin_R2, echo = F, comment = ""}
+
+# Calculate R^2 for each model
+r2.quabbin  <- sapply(QuabModBeta, FUN = r2)
+
+```
+
+```{r Quabbin_R2_Table, echo = F, comment = ""}
+
+# Show a table of R2
+# Convert the R^2 data to a more readable format
+r2.quabbin %>% 
+
+    # Transpose, making rows to columns and vice versa
+    t() %>% 
+    
+    # Convert to dataframe
+    data.frame() %>%
+
+    # Convert the baseline rownames to their own column called baseline
+    rownames_to_column(var = "baseline") %>%
+
+    # Convert the two R2 columns to numeric
+    mutate_at(vars(-baseline), as.numeric) %>% 
+
+    # Reorder columns
+    select(baseline, R2_marginal, R2_conditional) %>%
+
+    # Sort by R2_marginal descending
+    arrange(desc(R2_marginal)) %>%
+    
+    # Print out a table
+    kable(digits = 2)
+
+
+```
+
+## CT Burlap Larva
 
 ### Models
 
