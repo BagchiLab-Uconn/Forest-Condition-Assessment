@@ -11,23 +11,36 @@ July 21, 2020
       - [Models](#models)
       - [AIC](#aic)
       - [R<sup>2</sup>](#r2)
+      - [Plots from Top Baselines](#plots-from-top-baselines)
+          - [Top Quabbin Baseline:
+            tcg\_2005\_2015\_h13\_full](#top-quabbin-baseline-tcg_2005_2015_h13_full)
+          - [Consensus Baseline:
+            reanalysis](#consensus-baseline-reanalysis)
   - [CT Burlap Larva](#ct-burlap-larva)
       - [Models](#models-1)
       - [AIC](#aic-1)
           - [Both Years](#both-years)
           - [2017 Only](#only)
+          - [2018 Only](#only-1)
       - [R<sup>2</sup>](#r2-1)
-      - [Plots from Top Baselines](#plots-from-top-baselines)
-          - [sr\_2000-2010\_h13\_16d](#sr_2000-2010_h13_16d)
-          - [tcg\_2000-2010\_h13\_full](#tcg_2000-2010_h13_full)
+          - [2017 Only](#only-2)
+          - [2018 Only](#only-3)
+      - [Plots from Top Baselines](#plots-from-top-baselines-1)
+          - [Top Burlap Baseline:
+            ndvi\_2000\_2010\_h13\_16d](#top-burlap-baseline-ndvi_2000_2010_h13_16d)
+          - [Consensus Baseline:
+            reanalysis](#consensus-baseline-reanalysis-1)
   - [Egg Mass Models](#egg-mass-models)
       - [AIC](#aic-2)
           - [Both Years](#both-years-1)
-          - [2017 Only](#only-1)
+          - [2017 Only](#only-4)
+          - [2018 Only](#only-5)
       - [R<sup>2</sup>](#r2-2)
-      - [Plots from Top Baselines](#plots-from-top-baselines-1)
-          - [sr\_2000-2010\_h13\_16d](#sr_2000-2010_h13_16d-1)
-          - [tcg\_2000-2010\_h13\_full](#tcg_2000-2010_h13_full-1)
+          - [2017 Only](#only-6)
+          - [2018 Only](#only-7)
+      - [Plots from Top Baselines](#plots-from-top-baselines-2)
+          - [sr\_2000-2010\_h13\_16d](#sr_2000-2010_h13_16d)
+          - [tcg\_2000-2010\_h13\_full](#tcg_2000-2010_h13_full)
       - [Egg Mass Predictor](#egg-mass-predictor)
           - [AIC](#aic-3)
           - [R<sup>2</sup>](#r2-3)
@@ -78,162 +91,23 @@ mass abundance predicting larval Lymantria abundance
   - Egg masses only predict larval abundance during the outbreak, no
     relationship in 2018
 
-<!-- end list -->
-
-    'data.frame':   192 obs. of  48 variables:
-     $ PointID                  : chr  "BB_BBL_5" "BB_BBL_6" "BB_BBL_7" "BB_BBS_5" ...
-     $ Year                     : chr  "2017" "2017" "2017" "2017" ...
-     $ m_evi_2000_2010_h12_16d  : num  -2.87 -3.37 -2.99 -3.39 -3.01 ...
-     $ m_evi_2000_2010_h12_full : num  -2.61 -3.13 -2.79 -2.95 -2.75 ...
-     $ m_evi_2000_2010_h13_16d  : num  -2.62 -3.05 -2.57 -2.87 -2.27 ...
-     $ m_evi_2000_2010_h13_full : num  -2.26 -2.8 -2.3 -2.28 -1.98 ...
-     $ m_evi_2005_2015_h12_16d  : num  -3.11 -3.4 -3.1 -3.06 -2.82 ...
-     $ m_evi_2005_2015_h12_full : num  -2.54 -2.92 -2.37 -2.83 -2.73 ...
-     $ m_evi_2005_2015_h13_16d  : num  -3.08 -3.4 -2.91 -3.01 -2.36 ...
-     $ m_evi_2005_2015_h13_full : num  -2.62 -2.93 -2.35 -2.61 -2.21 ...
-     $ m_ndvi_2000_2010_h12_16d : num  -2.05 -2.06 -1.97 -2.86 -1.77 ...
-     $ m_ndvi_2000_2010_h12_full: num  -1.89 -1.96 -1.77 -2.55 -1.75 ...
-     $ m_ndvi_2000_2010_h13_16d : num  -2.03 -1.92 -1.81 -2.6 -1.37 ...
-     $ m_ndvi_2000_2010_h13_full: num  -1.79 -1.91 -1.57 -2.09 -1.33 ...
-     $ m_ndvi_2005_2015_h12_16d : num  -2.45 -2.37 -1.93 -2.95 -1.83 ...
-     $ m_ndvi_2005_2015_h12_full: num  -2.07 -2.15 -1.65 -2.54 -1.78 ...
-     $ m_ndvi_2005_2015_h13_16d : num  -2.95 -2.76 -2.25 -3.1 -1.83 ...
-     $ m_ndvi_2005_2015_h13_full: num  -2.42 -2.49 -1.91 -2.42 -1.67 ...
-     $ m_reanalysis             : num  -2.82 -3.71 -3.06 -3.48 -3.12 ...
-     $ m_sr_2000_2010_h12_16d   : num  -3.35 -3.38 -3.32 -3.3 -2.12 ...
-     $ m_sr_2000_2010_h12_full  : num  -2.62 -3.03 -2.95 -2.79 -2.13 ...
-     $ m_sr_2000_2010_h13_16d   : num  -2.62 -2.7 -2.57 -2.69 -1.56 ...
-     $ m_sr_2000_2010_h13_full  : num  -2.07 -2.44 -2.28 -2.09 -1.58 ...
-     $ m_sr_2005_2015_h12_16d   : num  -4.18 -3.82 -3.89 -4.08 -2.7 ...
-     $ m_sr_2005_2015_h12_full  : num  -3.32 -3.43 -3.06 -3.67 -2.69 ...
-     $ m_sr_2005_2015_h13_16d   : num  -3.57 -3.32 -3.14 -3.54 -2.28 ...
-     $ m_sr_2005_2015_h13_full  : num  -2.9 -2.99 -2.58 -2.89 -2.13 ...
-     $ m_tcg_2000_2010_h12_16d  : num  -3.02 -3.54 -3.12 -3.49 -3.07 ...
-     $ m_tcg_2000_2010_h12_full : num  -2.71 -3.32 -2.97 -3.09 -2.82 ...
-     $ m_tcg_2000_2010_h13_16d  : num  -2.87 -3.38 -2.82 -3.14 -2.39 ...
-     $ m_tcg_2000_2010_h13_full : num  -2.44 -3.05 -2.52 -2.52 -2.1 ...
-     $ m_tcg_2005_2015_h12_16d  : num  -3.51 -3.76 -3.53 -3.34 -3.06 ...
-     $ m_tcg_2005_2015_h12_full : num  -2.82 -3.34 -2.71 -3.1 -2.95 ...
-     $ m_tcg_2005_2015_h13_16d  : num  -3.62 -3.97 -3.52 -3.5 -2.72 ...
-     $ m_tcg_2005_2015_h13_full : num  -3.04 -3.51 -2.81 -3.08 -2.55 ...
-     $ BlockID                  : Factor w/ 13 levels "BB","BL","BS",..: 1 1 1 1 1 1 2 2 2 2 ...
-     $ SiteID                   : Factor w/ 32 levels "BBL","BBS","BRL",..: 1 1 1 2 2 2 20 20 20 21 ...
-     $ FragSize                 : num  388.8 388.8 388.8 26.9 26.9 ...
-     $ ForestProp1km            : num  0.71 0.71 0.71 0.751 0.751 0.751 0.655 0.655 0.655 0.59 ...
-     $ FragRatio1km             : num  1.81 1.81 1.81 1.5 1.5 ...
-     $ Hunted                   : Factor w/ 2 levels "no","yes": 2 2 2 1 1 1 2 2 2 2 ...
-     $ BrowseProb               : num  0.14 0.14 0.14 0.165 0.165 0.165 0.193 0.193 0.193 0.177 ...
-     $ SiteDefoliation          : num  -2.57 -2.57 -2.57 -2.98 -2.98 ...
-     $ EggMasses                : num  2 0 41 97 0 90 19 57 6 1 ...
-     $ Abundance                : int  365 328 353 140 173 241 282 354 277 295 ...
-     $ Alive                    : int  51 36 47 60 124 60 43 35 51 42 ...
-     $ Pathogen                 : int  314 292 306 80 49 181 202 277 182 217 ...
-     $ Mortality                : num  0.86 0.89 0.867 0.571 0.283 ...
-    'data.frame':   483 obs. of  64 variables:
-     $ system.index             : Factor w/ 477 levels "0","0.00E+00",..: 14 391 392 393 394 395 396 397 398 399 ...
-     $ BAft2acre.x              : int  100 110 120 100 100 100 80 80 110 90 ...
-     $ Defol17abs               : num  -1.914 -1.197 -1.108 -0.929 -1.747 ...
-     $ DefolMean                : num  1.6 1.73 1.92 1.4 2.8 ...
-     $ DefolSD                  : num  0.699 1.104 1.24 0.699 1.033 ...
-     $ DefolSD3x3               : num  0.293 0.394 0.408 0.305 0.238 ...
-     $ HotSpot                  : int  1 1 1 1 1 1 1 1 1 1 ...
-     $ OakDefolMe               : num  1.86 2.33 2.83 2.33 3 ...
-     $ OakDefolSD               : num  0.69 1.528 1.169 0.577 0.866 ...
-     $ PropOak.x                : num  0.7 0.273 0.5 0.3 0.9 ...
-     $ SmplPnt                  : int  0 1 2 3 4 5 6 7 8 9 ...
-     $ TYPE_ABREV               : Factor w/ 9 levels "BbRm","NrHd",..: 6 6 3 3 3 3 3 3 3 3 ...
-     $ YEAR_COMPL               : int  1998 1998 0 0 0 0 0 0 0 0 ...
-     $ harv                     : Factor w/ 2 levels "N","Y": 2 2 1 1 1 1 1 1 1 1 ...
-     $ hotplot                  : chr  "1 0" "1 1" "1 2" "1 3" ...
-     $ latitude                 : num  42.3 42.3 42.3 42.3 42.3 ...
-     $ longitude                : num  -72.4 -72.4 -72.4 -72.4 -72.4 ...
-     $ m_evi_2000_2010_h12_16d  : num  -2.107 -1.532 -0.707 -0.705 -1.048 ...
-     $ m_evi_2000_2010_h12_full : num  -2.111 -1.55 -1.006 -0.925 -1.291 ...
-     $ m_evi_2000_2010_h13_16d  : num  -1.317 -0.989 -0.227 -0.402 -0.645 ...
-     $ m_evi_2000_2010_h13_full : num  -1.515 -1.029 -0.767 -0.658 -0.944 ...
-     $ m_evi_2005_2015_h12_16d  : num  -1.98 -2.26 -1.22 -1.66 -2.06 ...
-     $ m_evi_2005_2015_h12_full : num  -1.7 -1.92 -1.21 -1.34 -1.73 ...
-     $ m_evi_2005_2015_h13_16d  : num  -1.738 -1.806 -0.813 -1.358 -1.612 ...
-     $ m_evi_2005_2015_h13_full : num  -1.533 -1.632 -0.923 -1.105 -1.442 ...
-     $ m_ndvi_2000_2010_h12_16d : num  -0.51055 -0.00355 0.18549 0.05526 -0.10191 ...
-     $ m_ndvi_2000_2010_h12_full: num  -0.4565 0.0718 0.313 0.221 -0.1444 ...
-     $ m_ndvi_2000_2010_h13_16d : num  -0.0194 0.306 0.4187 0.3406 0.2741 ...
-     $ m_ndvi_2000_2010_h13_full: num  -0.0664 0.3188 0.3537 0.3974 0.1205 ...
-     $ m_ndvi_2005_2015_h12_16d : num  -1.37 -1.39 -0.74 -1.26 -1.33 ...
-     $ m_ndvi_2005_2015_h12_full: num  -1.229 -1.291 -0.661 -0.923 -1.038 ...
-     $ m_ndvi_2005_2015_h13_16d : num  -1.336 -1.331 -0.577 -1.195 -1.175 ...
-     $ m_ndvi_2005_2015_h13_full: num  -1.188 -1.225 -0.531 -0.846 -0.92 ...
-     $ m_reanalysis             : num  -1.914 -1.197 -1.108 -0.929 -1.747 ...
-     $ m_sr_2000_2010_h12_16d   : num  -1.133 -0.664 -0.288 -0.19 -0.452 ...
-     $ m_sr_2000_2010_h12_full  : num  -1.243 -0.717 -0.246 -0.207 -0.619 ...
-     $ m_sr_2000_2010_h13_16d   : num  -0.5762 -0.2628 0.0437 0.0907 -0.0649 ...
-     $ m_sr_2000_2010_h13_full  : num  -0.8343 -0.3922 -0.1597 -0.0075 -0.3255 ...
-     $ m_sr_2005_2015_h12_16d   : num  -2.47 -2.55 -1.65 -2.02 -2.23 ...
-     $ m_sr_2005_2015_h12_full  : num  -2.03 -2.17 -1.42 -1.63 -1.74 ...
-     $ m_sr_2005_2015_h13_16d   : num  -2.36 -2.41 -1.45 -1.84 -1.86 ...
-     $ m_sr_2005_2015_h13_full  : num  -1.8 -1.93 -1.16 -1.3 -1.34 ...
-     $ m_tcg_2000_2010_h12_16d  : num  -2.307 -1.781 -0.871 -0.708 -1.256 ...
-     $ m_tcg_2000_2010_h12_full : num  -2.171 -1.684 -1.004 -0.876 -1.34 ...
-     $ m_tcg_2000_2010_h13_16d  : num  -1.624 -1.205 -0.389 -0.397 -0.845 ...
-     $ m_tcg_2000_2010_h13_full : num  -1.68 -1.172 -0.829 -0.608 -1.003 ...
-     $ m_tcg_2005_2015_h12_16d  : num  -2.23 -2.65 -1.67 -1.96 -2.33 ...
-     $ m_tcg_2005_2015_h12_full : num  -1.96 -2.26 -1.44 -1.62 -2.04 ...
-     $ m_tcg_2005_2015_h13_16d  : num  -2.06 -2.29 -1.25 -1.69 -1.96 ...
-     $ m_tcg_2005_2015_h13_full : num  -1.85 -2.03 -1.18 -1.4 -1.8 ...
-     $ .geo                     : Factor w/ 486 levels "{\"type\":\"Point\",\"coordinates\":[-72.23140206880488,42.42868481418561]}",..: 477 480 414 412 396 394 407 410 386 393 ...
-     $ hotspot                  : int  1 1 1 1 1 1 1 1 1 1 ...
-     $ point                    : int  0 1 2 3 4 5 6 7 8 9 ...
-     $ type                     : Factor w/ 9 levels "black birch/red maple/cherry",..: 6 6 4 4 4 4 4 4 4 4 ...
-     $ BAft2acre.y              : int  100 110 120 100 100 100 80 80 110 90 ...
-     $ n.trees                  : int  10 11 12 10 10 10 8 8 11 9 ...
-     $ MeanDef                  : num  0.275 0.307 0.354 0.225 0.575 ...
-     $ BAft2acre.conifer        : int  30 80 50 40 0 0 0 10 0 0 ...
-     $ MeanDef.conifer          : num  0.125 0.25 0.125 0.125 0 0 0 0.125 0 0 ...
-     $ BAft2acre.oak            : int  70 30 60 30 90 100 40 40 110 90 ...
-     $ MeanDef.oak              : num  0.339 0.458 0.583 0.458 0.625 ...
-     $ BAft2acre.otherhd        : int  0 0 10 30 10 0 40 30 0 0 ...
-     $ MeanDef.otherhd          : num  0 0 0.125 0.125 0.125 0 0.125 0.125 0 0 ...
-     $ PropOak.y                : num  0.7 0.273 0.5 0.3 0.9 ...
-
 ## Quabbin
 
 ### Models
 
-    MeanDef ~ m_evi_2000_2010_h12_16d + (1 | HotSpot)
-    MeanDef ~ m_evi_2000_2010_h12_full + (1 | HotSpot)
-    MeanDef ~ m_evi_2000_2010_h13_16d + (1 | HotSpot)
-    MeanDef ~ m_evi_2000_2010_h13_full + (1 | HotSpot)
-    MeanDef ~ m_evi_2005_2015_h12_16d + (1 | HotSpot)
-    MeanDef ~ m_evi_2005_2015_h12_full + (1 | HotSpot)
-    MeanDef ~ m_evi_2005_2015_h13_16d + (1 | HotSpot)
-    MeanDef ~ m_evi_2005_2015_h13_full + (1 | HotSpot)
-    MeanDef ~ m_ndvi_2000_2010_h12_16d + (1 | HotSpot)
-    MeanDef ~ m_ndvi_2000_2010_h12_full + (1 | HotSpot)
-    MeanDef ~ m_ndvi_2000_2010_h13_16d + (1 | HotSpot)
-    MeanDef ~ m_ndvi_2000_2010_h13_full + (1 | HotSpot)
-    MeanDef ~ m_ndvi_2005_2015_h12_16d + (1 | HotSpot)
-    MeanDef ~ m_ndvi_2005_2015_h12_full + (1 | HotSpot)
-    MeanDef ~ m_ndvi_2005_2015_h13_16d + (1 | HotSpot)
-    MeanDef ~ m_ndvi_2005_2015_h13_full + (1 | HotSpot)
-    MeanDef ~ m_reanalysis + (1 | HotSpot)
-    MeanDef ~ m_sr_2000_2010_h12_16d + (1 | HotSpot)
-    MeanDef ~ m_sr_2000_2010_h12_full + (1 | HotSpot)
-    MeanDef ~ m_sr_2000_2010_h13_16d + (1 | HotSpot)
-    MeanDef ~ m_sr_2000_2010_h13_full + (1 | HotSpot)
-    MeanDef ~ m_sr_2005_2015_h12_16d + (1 | HotSpot)
-    MeanDef ~ m_sr_2005_2015_h12_full + (1 | HotSpot)
-    MeanDef ~ m_sr_2005_2015_h13_16d + (1 | HotSpot)
-    MeanDef ~ m_sr_2005_2015_h13_full + (1 | HotSpot)
-    MeanDef ~ m_tcg_2000_2010_h12_16d + (1 | HotSpot)
-    MeanDef ~ m_tcg_2000_2010_h12_full + (1 | HotSpot)
-    MeanDef ~ m_tcg_2000_2010_h13_16d + (1 | HotSpot)
-    MeanDef ~ m_tcg_2000_2010_h13_full + (1 | HotSpot)
-    MeanDef ~ m_tcg_2005_2015_h12_16d + (1 | HotSpot)
-    MeanDef ~ m_tcg_2005_2015_h12_full + (1 | HotSpot)
-    MeanDef ~ m_tcg_2005_2015_h13_16d + (1 | HotSpot)
-    MeanDef ~ m_tcg_2005_2015_h13_full + (1 | HotSpot)
-
 ### AIC
+
+Here we compare all of the baselines using
+[AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) model
+selection.
+
+Models are ranked according to how good they are at predicting canopy
+defoliation.
+
+The column to pay attention to is dAIC, or the difference in AIC between
+models. A rule of thumb is that models with a dAIC less than 2 are not
+notably different in their quality, and that models within 6 are
+similar.
 
 | model                          |      AIC |   dAIC | df | weight |
 | :----------------------------- | -------: | -----: | -: | -----: |
@@ -273,6 +147,22 @@ mass abundance predicting larval Lymantria abundance
 
 ### R<sup>2</sup>
 
+Here, we are calculating the proportion of variance in the defoliation
+that is explained by each model.
+
+We actually get two R<sup>2</sup> numbers for these models, a marginal
+and a conditional R<sup>2</sup> (using the method from [Nakagawa &
+Schielzeth 2013](https://doi.org/10.1111/j.2041-210x.2012.00261.x)):
+
+  - **conditional R<sup>2</sup>**: the proportion of variance explained
+    by the whole model: defoliation score, and hotplot
+  - **marginal R<sup>2</sup>**: the proportion of variance explained by
+    just defoliation score (just fixed factors)
+
+In our case, we’re mostly interested in the marginal R<sup>2</sup>. This
+is going to tell us how well that particular defoliation score explains
+the canopy defoliation.
+
 | baseline                       | R2\_marginal | R2\_conditional |
 | :----------------------------- | -----------: | --------------: |
 | m\_tcg\_2005\_2015\_h13\_full  |         0.60 |            0.63 |
@@ -308,6 +198,24 @@ mass abundance predicting larval Lymantria abundance
 | m\_ndvi\_2000\_2010\_h12\_16d  |         0.25 |            0.41 |
 | m\_ndvi\_2000\_2010\_h12\_full |         0.24 |            0.42 |
 | m\_ndvi\_2005\_2015\_h12\_16d  |         0.18 |            0.26 |
+
+### Plots from Top Baselines
+
+#### Top Quabbin Baseline: tcg\_2005\_2015\_h13\_full
+
+![](Defoliation-Models_files/figure-gfm/Quabbin_Top_Param-1.png)<!-- -->
+
+![](Defoliation-Models_files/figure-gfm/Quabbin_Top_Pred-1.png)<!-- -->
+
+![](Defoliation-Models_files/figure-gfm/Quabbin_Top_Combined-1.png)<!-- -->
+
+#### Consensus Baseline: reanalysis
+
+![](Defoliation-Models_files/figure-gfm/Quabbin_Consensus_Param-1.png)<!-- -->
+
+![](Defoliation-Models_files/figure-gfm/Quabbin_Consensus_Pred-1.png)<!-- -->
+
+![](Defoliation-Models_files/figure-gfm/Quabbin_Consensus_Combined-1.png)<!-- -->
 
 ## CT Burlap Larva
 
@@ -403,13 +311,52 @@ similar.
 | m\_ndvi\_2005\_2015\_h12\_full | 1253.60 | 13.69 |  5 |   0.00 |
 | m\_ndvi\_2005\_2015\_h12\_16d  | 1254.74 | 14.82 |  5 |   0.00 |
 
+#### 2018 Only
+
+| model                          |    AIC | dAIC | df | weight |
+| :----------------------------- | -----: | ---: | -: | -----: |
+| m\_ndvi\_2000\_2010\_h13\_16d  | 822.29 | 0.00 |  5 |   0.37 |
+| m\_ndvi\_2000\_2010\_h13\_full | 824.85 | 2.57 |  5 |   0.10 |
+| m\_ndvi\_2000\_2010\_h12\_16d  | 826.52 | 4.23 |  5 |   0.04 |
+| m\_ndvi\_2000\_2010\_h12\_full | 826.86 | 4.57 |  5 |   0.04 |
+| m\_sr\_2000\_2010\_h13\_16d    | 827.45 | 5.16 |  5 |   0.03 |
+| m\_evi\_2000\_2010\_h13\_16d   | 827.57 | 5.28 |  5 |   0.03 |
+| m\_evi\_2005\_2015\_h13\_16d   | 827.61 | 5.32 |  5 |   0.03 |
+| m\_sr\_2000\_2010\_h12\_16d    | 827.76 | 5.47 |  5 |   0.02 |
+| m\_tcg\_2005\_2015\_h13\_16d   | 827.86 | 5.57 |  5 |   0.02 |
+| m\_evi\_2000\_2010\_h13\_full  | 828.04 | 5.75 |  5 |   0.02 |
+| m\_tcg\_2000\_2010\_h13\_16d   | 828.15 | 5.86 |  5 |   0.02 |
+| m\_evi\_2000\_2010\_h12\_full  | 828.15 | 5.87 |  5 |   0.02 |
+| m\_evi\_2000\_2010\_h12\_16d   | 828.25 | 5.96 |  5 |   0.02 |
+| m\_sr\_2000\_2010\_h13\_full   | 828.57 | 6.28 |  5 |   0.02 |
+| m\_sr\_2000\_2010\_h12\_full   | 828.64 | 6.35 |  5 |   0.02 |
+| m\_tcg\_2000\_2010\_h12\_16d   | 828.73 | 6.45 |  5 |   0.01 |
+| m\_ndvi\_2005\_2015\_h12\_full | 828.74 | 6.45 |  5 |   0.01 |
+| m\_tcg\_2000\_2010\_h13\_full  | 828.78 | 6.49 |  5 |   0.01 |
+| m\_tcg\_2000\_2010\_h12\_full  | 828.88 | 6.59 |  5 |   0.01 |
+| m\_sr\_2005\_2015\_h13\_16d    | 828.99 | 6.70 |  5 |   0.01 |
+| m\_evi\_2005\_2015\_h12\_16d   | 828.99 | 6.70 |  5 |   0.01 |
+| m\_tcg\_2005\_2015\_h12\_16d   | 829.13 | 6.85 |  5 |   0.01 |
+| m\_ndvi\_2005\_2015\_h12\_16d  | 829.16 | 6.88 |  5 |   0.01 |
+| m\_ndvi\_2005\_2015\_h13\_16d  | 829.21 | 6.92 |  5 |   0.01 |
+| m\_evi\_2005\_2015\_h13\_full  | 829.27 | 6.98 |  5 |   0.01 |
+| m\_sr\_2005\_2015\_h12\_16d    | 829.33 | 7.04 |  5 |   0.01 |
+| m\_tcg\_2005\_2015\_h13\_full  | 829.39 | 7.10 |  5 |   0.01 |
+| m\_ndvi\_2005\_2015\_h13\_full | 829.58 | 7.29 |  5 |   0.01 |
+| m\_reanalysis                  | 829.58 | 7.29 |  5 |   0.01 |
+| m\_sr\_2005\_2015\_h13\_full   | 829.66 | 7.37 |  5 |   0.01 |
+| m\_evi\_2005\_2015\_h12\_full  | 829.68 | 7.39 |  5 |   0.01 |
+| m\_sr\_2005\_2015\_h12\_full   | 829.68 | 7.39 |  5 |   0.01 |
+| m\_tcg\_2005\_2015\_h12\_full  | 829.68 | 7.39 |  5 |   0.01 |
+
 ### R<sup>2</sup>
 
 Here, we are calculating the proportion of variance in the Lymantria
 abundance data that is explained by each model.
 
 We actually get two R<sup>2</sup> numbers for these models, a marginal
-and a conditional R<sup>2</sup>:
+and a conditional R<sup>2</sup> (using the method from [Nakagawa &
+Schielzeth 2013](https://doi.org/10.1111/j.2041-210x.2012.00261.x)):
 
   - **conditional R<sup>2</sup>**: the proportion of variance explained
     by the whole model: year, defoliation score, block, and site
@@ -456,27 +403,118 @@ the abundance of Lymantria.
 | m\_ndvi\_2005\_2015\_h12\_full |         0.63 |            0.73 |
 | m\_ndvi\_2005\_2015\_h12\_16d  |         0.62 |            0.74 |
 
+#### 2017 Only
+
+| baseline                       | R2\_marginal | R2\_conditional |
+| :----------------------------- | -----------: | --------------: |
+| m\_sr\_2000\_2010\_h13\_16d    |         0.45 |            0.73 |
+| m\_sr\_2000\_2010\_h13\_full   |         0.44 |            0.73 |
+| m\_tcg\_2000\_2010\_h13\_16d   |         0.44 |            0.69 |
+| m\_tcg\_2000\_2010\_h13\_full  |         0.44 |            0.68 |
+| m\_ndvi\_2000\_2010\_h13\_16d  |         0.43 |            0.71 |
+| m\_sr\_2005\_2015\_h12\_16d    |         0.43 |            0.74 |
+| m\_evi\_2000\_2010\_h13\_16d   |         0.43 |            0.69 |
+| m\_evi\_2000\_2010\_h13\_full  |         0.43 |            0.68 |
+| m\_sr\_2005\_2015\_h13\_16d    |         0.43 |            0.74 |
+| m\_sr\_2000\_2010\_h12\_16d    |         0.43 |            0.73 |
+| m\_sr\_2000\_2010\_h12\_full   |         0.42 |            0.72 |
+| m\_tcg\_2005\_2015\_h12\_full  |         0.42 |            0.71 |
+| m\_sr\_2005\_2015\_h12\_full   |         0.42 |            0.74 |
+| m\_tcg\_2000\_2010\_h12\_16d   |         0.42 |            0.70 |
+| m\_evi\_2000\_2010\_h12\_16d   |         0.42 |            0.70 |
+| m\_tcg\_2000\_2010\_h12\_full  |         0.41 |            0.68 |
+| m\_evi\_2000\_2010\_h12\_full  |         0.40 |            0.68 |
+| m\_evi\_2005\_2015\_h12\_full  |         0.40 |            0.70 |
+| m\_sr\_2005\_2015\_h13\_full   |         0.39 |            0.72 |
+| m\_ndvi\_2000\_2010\_h12\_16d  |         0.39 |            0.73 |
+| m\_ndvi\_2000\_2010\_h13\_full |         0.39 |            0.70 |
+| m\_tcg\_2005\_2015\_h12\_16d   |         0.39 |            0.73 |
+| m\_tcg\_2005\_2015\_h13\_full  |         0.37 |            0.70 |
+| m\_tcg\_2005\_2015\_h13\_16d   |         0.36 |            0.72 |
+| m\_evi\_2005\_2015\_h13\_full  |         0.36 |            0.69 |
+| m\_evi\_2005\_2015\_h12\_16d   |         0.36 |            0.72 |
+| m\_ndvi\_2005\_2015\_h13\_16d  |         0.35 |            0.69 |
+| m\_ndvi\_2000\_2010\_h12\_full |         0.35 |            0.70 |
+| m\_evi\_2005\_2015\_h13\_16d   |         0.34 |            0.71 |
+| m\_reanalysis                  |         0.34 |            0.70 |
+| m\_ndvi\_2005\_2015\_h13\_full |         0.32 |            0.68 |
+| m\_ndvi\_2005\_2015\_h12\_full |         0.32 |            0.68 |
+| m\_ndvi\_2005\_2015\_h12\_16d  |         0.31 |            0.69 |
+
+#### 2018 Only
+
+Condition score is only a significant predictor of larval abundance for
+the two ndvi\_2000-2010\_h13 baselines.
+
+| baseline                       | R2\_marginal | R2\_conditional |
+| :----------------------------- | -----------: | --------------: |
+| m\_ndvi\_2000\_2010\_h13\_16d  |         0.07 |            0.79 |
+| m\_ndvi\_2000\_2010\_h13\_full |         0.04 |            0.80 |
+| m\_ndvi\_2000\_2010\_h12\_full |         0.02 |            0.81 |
+| m\_ndvi\_2000\_2010\_h12\_16d  |         0.02 |            0.81 |
+| m\_evi\_2005\_2015\_h13\_16d   |         0.02 |            0.81 |
+| m\_tcg\_2005\_2015\_h13\_16d   |         0.02 |            0.80 |
+| m\_sr\_2000\_2010\_h13\_16d    |         0.02 |            0.80 |
+| m\_evi\_2000\_2010\_h13\_16d   |         0.02 |            0.80 |
+| m\_sr\_2000\_2010\_h12\_16d    |         0.01 |            0.80 |
+| m\_evi\_2000\_2010\_h13\_full  |         0.01 |            0.81 |
+| m\_tcg\_2000\_2010\_h13\_16d   |         0.01 |            0.80 |
+| m\_evi\_2000\_2010\_h12\_full  |         0.01 |            0.81 |
+| m\_sr\_2000\_2010\_h13\_full   |         0.01 |            0.80 |
+| m\_evi\_2000\_2010\_h12\_16d   |         0.01 |            0.81 |
+| m\_sr\_2000\_2010\_h12\_full   |         0.01 |            0.80 |
+| m\_ndvi\_2005\_2015\_h12\_full |         0.01 |            0.82 |
+| m\_sr\_2005\_2015\_h13\_16d    |         0.01 |            0.80 |
+| m\_tcg\_2000\_2010\_h13\_full  |         0.01 |            0.80 |
+| m\_evi\_2005\_2015\_h12\_16d   |         0.01 |            0.81 |
+| m\_tcg\_2000\_2010\_h12\_16d   |         0.01 |            0.80 |
+| m\_tcg\_2005\_2015\_h12\_16d   |         0.01 |            0.80 |
+| m\_tcg\_2000\_2010\_h12\_full  |         0.01 |            0.81 |
+| m\_ndvi\_2005\_2015\_h12\_16d  |         0.00 |            0.81 |
+| m\_ndvi\_2005\_2015\_h13\_16d  |         0.00 |            0.79 |
+| m\_evi\_2005\_2015\_h13\_full  |         0.00 |            0.80 |
+| m\_sr\_2005\_2015\_h12\_16d    |         0.00 |            0.80 |
+| m\_tcg\_2005\_2015\_h13\_full  |         0.00 |            0.80 |
+| m\_ndvi\_2005\_2015\_h13\_full |         0.00 |            0.80 |
+| m\_reanalysis                  |         0.00 |            0.80 |
+| m\_sr\_2005\_2015\_h13\_full   |         0.00 |            0.80 |
+| m\_evi\_2005\_2015\_h12\_full  |         0.00 |            0.80 |
+| m\_sr\_2005\_2015\_h12\_full   |         0.00 |            0.80 |
+| m\_tcg\_2005\_2015\_h12\_full  |         0.00 |            0.80 |
+
 ### Plots from Top Baselines
 
-#### sr\_2000-2010\_h13\_16d
+#### Top Burlap Baseline: ndvi\_2000\_2010\_h13\_16d
 
-![](Defoliation-Models_files/figure-gfm/Burlap_sr_Param-1.png)<!-- -->
+![](Defoliation-Models_files/figure-gfm/Burlap_Top_Param-1.png)<!-- -->
 
-![](Defoliation-Models_files/figure-gfm/Burlap_sr_Pred-1.png)<!-- -->
+![](Defoliation-Models_files/figure-gfm/Burlap_Top_Pred-1.png)<!-- -->
 
-![](Defoliation-Models_files/figure-gfm/Burlap_sr_Combined-1.png)<!-- -->
+![](Defoliation-Models_files/figure-gfm/Burlap_top_Combined-1.png)<!-- -->
 
-#### tcg\_2000-2010\_h13\_full
+#### Consensus Baseline: reanalysis
 
-![](Defoliation-Models_files/figure-gfm/Burlap_tcg_Param-1.png)<!-- -->
+![](Defoliation-Models_files/figure-gfm/Burlap_Consensus_Param-1.png)<!-- -->
 
-![](Defoliation-Models_files/figure-gfm/Burlap_tcg_Pred-1.png)<!-- -->
+![](Defoliation-Models_files/figure-gfm/Burlap_Consensus_Pred-1.png)<!-- -->
 
-![](Defoliation-Models_files/figure-gfm/Burlap_tcg_Combined-1.png)<!-- -->
+![](Defoliation-Models_files/figure-gfm/Burlap_Consensus_Combined-1.png)<!-- -->
 
 ## Egg Mass Models
 
 ### AIC
+
+Here we compare all of the baselines using
+[AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) model
+selection.
+
+Models are ranked according to how good they are at predicting Lymantria
+egg mass counts.
+
+The column to pay attention to is dAIC, or the difference in AIC between
+models. A rule of thumb is that models with a dAIC less than 2 are not
+notably different in their quality, and that models within 6 are
+similar.
 
 #### Both Years
 
@@ -554,7 +592,67 @@ the abundance of Lymantria.
 | m\_ndvi\_2005\_2015\_h12\_full | 561.32 | 18.37 |  5 |   0.00 |
 | m\_ndvi\_2005\_2015\_h12\_16d  | 561.96 | 19.01 |  5 |   0.00 |
 
+    Random effect variances not available. Returned R2 does not account for random effects.
+    # R2 for Mixed Models
+    
+      Conditional R2: NA
+         Marginal R2: 0.764
+
+#### 2018 Only
+
+| model                          |    AIC |  dAIC | df | weight |
+| :----------------------------- | -----: | ----: | -: | -----: |
+| m\_tcg\_2005\_2015\_h13\_16d   | 516.62 |  0.00 |  5 |   0.27 |
+| m\_evi\_2005\_2015\_h13\_16d   | 517.12 |  0.50 |  5 |   0.21 |
+| m\_sr\_2000\_2010\_h12\_16d    | 518.66 |  2.04 |  5 |   0.10 |
+| m\_sr\_2000\_2010\_h13\_16d    | 519.24 |  2.62 |  5 |   0.07 |
+| m\_tcg\_2005\_2015\_h12\_16d   | 519.63 |  3.01 |  5 |   0.06 |
+| m\_sr\_2005\_2015\_h13\_16d    | 520.52 |  3.90 |  5 |   0.04 |
+| m\_evi\_2005\_2015\_h12\_16d   | 520.53 |  3.92 |  5 |   0.04 |
+| m\_tcg\_2005\_2015\_h13\_full  | 521.59 |  4.98 |  5 |   0.02 |
+| m\_reanalysis                  | 521.73 |  5.12 |  5 |   0.02 |
+| m\_tcg\_2000\_2010\_h13\_16d   | 522.56 |  5.94 |  5 |   0.01 |
+| m\_tcg\_2000\_2010\_h12\_full  | 522.67 |  6.06 |  5 |   0.01 |
+| m\_ndvi\_2000\_2010\_h13\_16d  | 522.68 |  6.06 |  5 |   0.01 |
+| m\_tcg\_2000\_2010\_h12\_16d   | 522.80 |  6.18 |  5 |   0.01 |
+| m\_evi\_2005\_2015\_h13\_full  | 522.96 |  6.34 |  5 |   0.01 |
+| m\_tcg\_2005\_2015\_h12\_full  | 522.99 |  6.37 |  5 |   0.01 |
+| m\_sr\_2005\_2015\_h12\_16d    | 523.05 |  6.43 |  5 |   0.01 |
+| m\_sr\_2000\_2010\_h12\_full   | 523.19 |  6.57 |  5 |   0.01 |
+| m\_evi\_2000\_2010\_h13\_16d   | 523.21 |  6.59 |  5 |   0.01 |
+| m\_sr\_2005\_2015\_h13\_full   | 523.25 |  6.64 |  5 |   0.01 |
+| m\_tcg\_2000\_2010\_h13\_full  | 523.38 |  6.76 |  5 |   0.01 |
+| m\_ndvi\_2000\_2010\_h12\_16d  | 523.54 |  6.92 |  5 |   0.01 |
+| m\_sr\_2000\_2010\_h13\_full   | 523.69 |  7.07 |  5 |   0.01 |
+| m\_evi\_2000\_2010\_h12\_16d   | 523.91 |  7.29 |  5 |   0.01 |
+| m\_sr\_2005\_2015\_h12\_full   | 524.16 |  7.54 |  5 |   0.01 |
+| m\_evi\_2000\_2010\_h12\_full  | 524.44 |  7.82 |  5 |   0.01 |
+| m\_evi\_2005\_2015\_h12\_full  | 524.54 |  7.92 |  5 |   0.01 |
+| m\_evi\_2000\_2010\_h13\_full  | 524.83 |  8.21 |  5 |   0.00 |
+| m\_ndvi\_2005\_2015\_h13\_16d  | 527.07 | 10.46 |  5 |   0.00 |
+| m\_ndvi\_2000\_2010\_h12\_full | 527.31 | 10.69 |  5 |   0.00 |
+| m\_ndvi\_2000\_2010\_h13\_full | 527.68 | 11.06 |  5 |   0.00 |
+| m\_ndvi\_2005\_2015\_h13\_full | 528.32 | 11.71 |  5 |   0.00 |
+| m\_ndvi\_2005\_2015\_h12\_16d  | 529.87 | 13.26 |  5 |   0.00 |
+| m\_ndvi\_2005\_2015\_h12\_full | 530.02 | 13.40 |  5 |   0.00 |
+
 ### R<sup>2</sup>
+
+Here, we are calculating the proportion of variance in the Lymantria egg
+mass count data that is explained by each model.
+
+We actually get two R<sup>2</sup> numbers for these models, a marginal
+and a conditional R<sup>2</sup> (using the method from [Nakagawa &
+Schielzeth 2013](https://doi.org/10.1111/j.2041-210x.2012.00261.x)):
+
+  - **conditional R<sup>2</sup>**: the proportion of variance explained
+    by the whole model: year, defoliation score, block, and site
+  - **marginal R<sup>2</sup>**: the proportion of variance explained by
+    just year and defoliation score (just fixed factors)
+
+In our case, we’re mostly interested in the marginal R<sup>2</sup>. This
+is going to tell us how well that particular defoliation score explains
+the number of Lymantria egg masses.
 
 | baseline                       | R2\_marginal | R2\_conditional |
 | :----------------------------- | -----------: | --------------: |
@@ -592,6 +690,114 @@ the abundance of Lymantria.
 | m\_ndvi\_2005\_2015\_h12\_full |         0.06 |            0.79 |
 | m\_ndvi\_2005\_2015\_h12\_16d  |         0.06 |            0.80 |
 
+#### 2017 Only
+
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+    Random effect variances not available. Returned R2 does not account for random effects.
+
+| baseline                       | R2\_marginal | R2\_conditional |
+| :----------------------------- | -----------: | --------------: |
+| m\_reanalysis                  |         0.76 |              NA |
+| m\_tcg\_2000\_2010\_h12\_full  |         0.76 |              NA |
+| m\_sr\_2005\_2015\_h13\_16d    |         0.76 |              NA |
+| m\_tcg\_2000\_2010\_h13\_full  |         0.75 |              NA |
+| m\_sr\_2000\_2010\_h12\_16d    |         0.74 |              NA |
+| m\_sr\_2005\_2015\_h12\_16d    |         0.74 |              NA |
+| m\_evi\_2000\_2010\_h12\_full  |         0.74 |              NA |
+| m\_tcg\_2000\_2010\_h13\_16d   |         0.74 |              NA |
+| m\_tcg\_2000\_2010\_h12\_16d   |         0.74 |              NA |
+| m\_sr\_2000\_2010\_h13\_16d    |         0.74 |              NA |
+| m\_evi\_2000\_2010\_h12\_16d   |         0.74 |              NA |
+| m\_evi\_2000\_2010\_h13\_full  |         0.73 |              NA |
+| m\_sr\_2005\_2015\_h13\_full   |         0.73 |              NA |
+| m\_evi\_2000\_2010\_h13\_16d   |         0.73 |              NA |
+| m\_tcg\_2005\_2015\_h12\_full  |         0.73 |              NA |
+| m\_tcg\_2005\_2015\_h13\_16d   |         0.72 |              NA |
+| m\_sr\_2000\_2010\_h12\_full   |         0.72 |              NA |
+| m\_sr\_2000\_2010\_h13\_full   |         0.71 |              NA |
+| m\_ndvi\_2000\_2010\_h13\_16d  |         0.71 |              NA |
+| m\_evi\_2005\_2015\_h13\_16d   |         0.71 |              NA |
+| m\_evi\_2005\_2015\_h12\_full  |         0.71 |              NA |
+| m\_tcg\_2005\_2015\_h13\_full  |         0.70 |              NA |
+| m\_ndvi\_2000\_2010\_h12\_16d  |         0.70 |              NA |
+| m\_ndvi\_2005\_2015\_h13\_16d  |         0.69 |              NA |
+| m\_evi\_2005\_2015\_h13\_full  |         0.69 |              NA |
+| m\_ndvi\_2000\_2010\_h13\_full |         0.66 |              NA |
+| m\_ndvi\_2005\_2015\_h13\_full |         0.66 |              NA |
+| m\_ndvi\_2000\_2010\_h12\_full |         0.64 |              NA |
+| m\_sr\_2005\_2015\_h12\_full   |         0.44 |            0.84 |
+| m\_tcg\_2005\_2015\_h12\_16d   |         0.38 |            0.86 |
+| m\_evi\_2005\_2015\_h12\_16d   |         0.34 |            0.86 |
+| m\_ndvi\_2005\_2015\_h12\_full |         0.27 |            0.84 |
+| m\_ndvi\_2005\_2015\_h12\_16d  |         0.25 |            0.85 |
+
+#### 2018 Only
+
+Condition score is not a significant predictor of egg mass counts for
+the bottom six NDVI models.
+
+| baseline                       | R2\_marginal | R2\_conditional |
+| :----------------------------- | -----------: | --------------: |
+| m\_tcg\_2005\_2015\_h13\_16d   |         0.19 |            0.84 |
+| m\_evi\_2005\_2015\_h13\_16d   |         0.18 |            0.84 |
+| m\_tcg\_2005\_2015\_h12\_16d   |         0.15 |            0.81 |
+| m\_sr\_2005\_2015\_h13\_16d    |         0.14 |            0.81 |
+| m\_evi\_2005\_2015\_h12\_16d   |         0.14 |            0.81 |
+| m\_sr\_2000\_2010\_h12\_16d    |         0.14 |            0.80 |
+| m\_sr\_2000\_2010\_h13\_16d    |         0.13 |            0.81 |
+| m\_tcg\_2005\_2015\_h13\_full  |         0.13 |            0.81 |
+| m\_sr\_2005\_2015\_h13\_full   |         0.11 |            0.77 |
+| m\_reanalysis                  |         0.11 |            0.81 |
+| m\_sr\_2005\_2015\_h12\_16d    |         0.11 |            0.79 |
+| m\_ndvi\_2000\_2010\_h13\_16d  |         0.11 |            0.82 |
+| m\_evi\_2005\_2015\_h13\_full  |         0.10 |            0.81 |
+| m\_tcg\_2005\_2015\_h12\_full  |         0.10 |            0.79 |
+| m\_sr\_2005\_2015\_h12\_full   |         0.10 |            0.76 |
+| m\_ndvi\_2000\_2010\_h12\_16d  |         0.10 |            0.78 |
+| m\_sr\_2000\_2010\_h12\_full   |         0.09 |            0.78 |
+| m\_evi\_2005\_2015\_h12\_full  |         0.08 |            0.79 |
+| m\_tcg\_2000\_2010\_h12\_full  |         0.08 |            0.80 |
+| m\_sr\_2000\_2010\_h13\_full   |         0.08 |            0.79 |
+| m\_tcg\_2000\_2010\_h13\_16d   |         0.08 |            0.81 |
+| m\_tcg\_2000\_2010\_h13\_full  |         0.07 |            0.81 |
+| m\_tcg\_2000\_2010\_h12\_16d   |         0.07 |            0.80 |
+| m\_evi\_2000\_2010\_h13\_16d   |         0.07 |            0.82 |
+| m\_evi\_2000\_2010\_h12\_16d   |         0.06 |            0.80 |
+| m\_evi\_2000\_2010\_h12\_full  |         0.06 |            0.80 |
+| m\_evi\_2000\_2010\_h13\_full  |         0.05 |            0.81 |
+| m\_ndvi\_2005\_2015\_h13\_16d  |         0.04 |            0.80 |
+| m\_ndvi\_2000\_2010\_h12\_full |         0.04 |            0.78 |
+| m\_ndvi\_2000\_2010\_h13\_full |         0.03 |            0.80 |
+| m\_ndvi\_2005\_2015\_h13\_full |         0.03 |            0.79 |
+| m\_ndvi\_2005\_2015\_h12\_16d  |         0.00 |            0.79 |
+| m\_ndvi\_2005\_2015\_h12\_full |         0.00 |            0.78 |
+
 ### Plots from Top Baselines
 
 #### sr\_2000-2010\_h13\_16d
@@ -614,13 +820,43 @@ the abundance of Lymantria.
 
 #### AIC
 
+Here we compare the top defoliation score models with one using egg mass
+counts to predict Lymantria larval abundance using
+[AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) model
+selection.
+
+Models are ranked according to how good they are at predicting Lymantria
+larval abundance.
+
+The column to pay attention to is dAIC, or the difference in AIC between
+models. A rule of thumb is that models with a dAIC less than 2 are not
+notably different in their quality, and that models within 6 are
+similar.
+
 | model                             |     AIC |  dAIC | df | weight |
 | :-------------------------------- | ------: | ----: | -: | -----: |
-| m\_sr\_2000-2010\_h13\_16d        | 2102.96 |  0.00 |  7 |   0.92 |
-| m\_tcg\_2000-2010\_h13\_full      | 2107.89 |  4.93 |  7 |   0.08 |
-| Predict abundance with egg masses | 2123.20 | 20.24 |  7 |   0.00 |
+| ndvi\_2000\_2010\_h13\_16d        | 2097.77 |  0.00 |  7 |      1 |
+| tcg\_2005\_2015\_h13\_full        | 2112.93 | 15.16 |  7 |      0 |
+| reanalysis                        | 2113.65 | 15.88 |  7 |      0 |
+| Predict abundance with egg masses | 2123.20 | 25.43 |  7 |      0 |
 
 #### R<sup>2</sup>
+
+Here, we are calculating the proportion of variance in the Lymantria
+abundance data that is explained by each model.
+
+We actually get two R<sup>2</sup> numbers for these models, a marginal
+and a conditional R<sup>2</sup> (using the method from [Nakagawa &
+Schielzeth 2013](https://doi.org/10.1111/j.2041-210x.2012.00261.x)):
+
+  - **conditional R<sup>2</sup>**: the proportion of variance explained
+    by the whole model: year, egg masses, block, and site
+  - **marginal R<sup>2</sup>**: the proportion of variance explained by
+    just year and egg masses (just fixed factors)
+
+In our case, we’re mostly interested in the marginal R<sup>2</sup>. This
+is going to tell us how well egg mass counts explain the abundance of
+Lymantria larva.
 
     Abundance ~ EggMasses * Year + (1 | BlockID/SiteID)
     # R2 for Mixed Models
