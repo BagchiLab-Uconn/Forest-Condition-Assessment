@@ -1,7 +1,7 @@
 Defoliation Model Comparison
 ================
 James Mickley and Audrey Barker Plotkin
-July 21, 2020
+July 22, 2020
 
 
 

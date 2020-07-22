@@ -829,7 +829,7 @@ AIC.burlap.17 <- AICtab(burlapmodels17, base = TRUE, weights = TRUE) %>%
 
 
 # Write to CSV
-write.csv(AIC.burlap, file = "data/CTBurlap32ModelsAIC_2017.csv", row.names = FALSE)
+write.csv(AIC.burlap.17, file = "data/CTBurlap32ModelsAIC_2017.csv", row.names = FALSE)
 
 # Display
 AIC.burlap.17 %>%
@@ -855,7 +855,7 @@ AIC.burlap.18 <- AICtab(burlapmodels18, base = TRUE, weights = TRUE) %>%
 
 
 # Write to CSV
-write.csv(AIC.burlap, file = "data/CTBurlap32ModelsAIC_2018.csv", row.names = FALSE)
+write.csv(AIC.burlap.18, file = "data/CTBurlap32ModelsAIC_2018.csv", row.names = FALSE)
 
 # Display
 AIC.burlap.18 %>%
@@ -1437,7 +1437,7 @@ AIC.egg.17 <- AICtab(eggmodels17, base = TRUE, weights = TRUE) %>%
     rownames_to_column(var = "model")
 
 # Write to CSV
-write.csv(AIC.egg, file = "data/CTEggMasses32ModelsAIC_2017.csv", row.names = FALSE)
+write.csv(AIC.egg.17, file = "data/CTEggMasses32ModelsAIC_2017.csv", row.names = FALSE)
 
 # Display
 AIC.egg.17 %>%
@@ -1463,7 +1463,7 @@ AIC.egg.18 <- AICtab(eggmodels18, base = TRUE, weights = TRUE) %>%
     rownames_to_column(var = "model")
 
 # Write to CSV
-write.csv(AIC.egg, file = "data/CTEggMasses32ModelsAIC_2018.csv", row.names = FALSE)
+write.csv(AIC.egg.18, file = "data/CTEggMasses32ModelsAIC_2018.csv", row.names = FALSE)
 
 # Display
 AIC.egg.18 %>%
