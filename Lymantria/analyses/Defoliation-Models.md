@@ -56,8 +56,16 @@ July 22, 2020
           - [Consensus Baseline:](#consensus-baseline-2)
   - [Egg Mass Predictor](#egg-mass-predictor)
       - [AIC](#aic-3)
+          - [Both Years](#both-years-2)
+          - [2017 Only](#only-8)
+          - [2018 Only](#only-9)
       - [R<sup>2</sup>](#r2-3)
+          - [Both Years](#both-years-3)
+          - [2017 Only](#only-10)
+          - [2018 Only](#only-11)
       - [Plots](#plots)
+          - [Both Years](#both-years-4)
+          - [2017 Only](#only-12)
   - [Combined Panel Plots](#combined-panel-plots)
       - [Top](#top)
       - [Consensus](#consensus)
@@ -832,12 +840,32 @@ models. A rule of thumb is that models with a dAIC less than 2 are not
 notably different in their quality, and that models within 6 are
 similar.
 
+#### Both Years
+
 | model                             |     AIC |  dAIC | df | weight |
 | :-------------------------------- | ------: | ----: | -: | -----: |
 | ndvi\_2000\_2010\_h13\_16d        | 2097.77 |  0.00 |  7 |      1 |
 | tcg\_2005\_2015\_h13\_full        | 2112.93 | 15.16 |  7 |      0 |
 | reanalysis                        | 2113.65 | 15.88 |  7 |      0 |
 | Predict abundance with egg masses | 2123.20 | 25.43 |  7 |      0 |
+
+#### 2017 Only
+
+| model                             |     AIC |  dAIC | df | weight |
+| :-------------------------------- | ------: | ----: | -: | -----: |
+| ndvi\_2000\_2010\_h13\_16d        | 1241.72 |  0.00 |  4 |   0.86 |
+| tcg\_2005\_2015\_h13\_full        | 1246.27 |  4.55 |  4 |   0.09 |
+| reanalysis                        | 1247.79 |  6.08 |  4 |   0.04 |
+| Predict abundance with egg masses | 1252.11 | 10.39 |  4 |   0.00 |
+
+#### 2018 Only
+
+| model                             |    AIC | dAIC | df | weight |
+| :-------------------------------- | -----: | ---: | -: | -----: |
+| ndvi\_2000\_2010\_h13\_16d        | 823.00 | 0.00 |  4 |   0.93 |
+| Predict abundance with egg masses | 828.92 | 5.92 |  4 |   0.05 |
+| tcg\_2005\_2015\_h13\_full        | 831.78 | 8.78 |  4 |   0.01 |
+| reanalysis                        | 832.08 | 9.07 |  4 |   0.01 |
 
 ### R<sup>2</sup>
 
@@ -857,21 +885,110 @@ In our case, we’re mostly interested in the marginal R<sup>2</sup>. This
 is going to tell us how well egg mass counts explain the abundance of
 Lymantria larva.
 
+#### Both Years
+
     Abundance ~ EggMasses * Year + (1 | BlockID/SiteID)
     # R2 for Mixed Models
     
       Conditional R2: 0.760
          Marginal R2: 0.555
 
+#### 2017 Only
+
+    # R2 for Mixed Models
+    
+      Conditional R2: 0.717
+         Marginal R2: 0.083
+
+#### 2018 Only
+
+    # R2 for Mixed Models
+    
+      Conditional R2: 0.813
+         Marginal R2: 0.026
+
 ### Plots
 
+#### Both Years
+
 ![](Defoliation-Models_files/figure-gfm/Egg_Predictor_Combined-1.png)<!-- -->
+
+#### 2017 Only
+
+![](Defoliation-Models_files/figure-gfm/Egg_Predictor_Combined_2017-1.png)<!-- -->
 
 ## Combined Panel Plots
 
 ### Top
 
 ![](Defoliation-Models_files/figure-gfm/Panel_Plot_Top-1.png)<!-- -->
+
+    $var.fixed
+    [1] 2.971978
+    
+    $var.residual
+    [1] 0.9130801
+    
+    $var.distribution
+    [1] 0.9130801
+    
+    $var.dispersion
+    [1] 0
+    
+    $var.intercept
+    SiteID:BlockID        BlockID 
+      2.896086e+00   1.804695e-08 
+     Family: nbinom2  ( log )
+    Formula:          EggMasses ~ m_reanalysis * Year + (1 | BlockID/SiteID)
+    Data: ly.comb
+    
+         AIC      BIC   logLik deviance df.resid 
+      1046.0   1068.7   -516.0   1032.0      184 
+    
+    Random effects:
+    
+    Conditional model:
+     Groups         Name        Variance Std.Dev.
+     SiteID:BlockID (Intercept) 2.246    1.499   
+     BlockID        (Intercept) 1.088    1.043   
+    Number of obs: 191, groups:  SiteID:BlockID, 32; BlockID, 13
+    
+    Overdispersion parameter for nbinom2 family (): 0.659 
+    
+    Conditional model:
+                          Estimate Std. Error z value Pr(>|z|)    
+    (Intercept)            -0.4775     0.5542  -0.862 0.388828    
+    m_reanalysis           -1.2929     0.2406  -5.373 7.73e-08 ***
+    Year2018                1.4822     0.4159   3.564 0.000365 ***
+    m_reanalysis:Year2018   0.5013     0.2857   1.755 0.079260 .  
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+     Family: nbinom2  ( log )
+    Formula:          
+    EggMasses ~ m_tcg_2000_2010_h12_full * Year + (1 | BlockID/SiteID)
+    Data: ly.comb
+    
+         AIC      BIC   logLik deviance df.resid 
+      1048.6   1071.3   -517.3   1034.6      184 
+    
+    Random effects:
+    
+    Conditional model:
+     Groups         Name        Variance Std.Dev.
+     SiteID:BlockID (Intercept) 2.264    1.5047  
+     BlockID        (Intercept) 0.903    0.9503  
+    Number of obs: 191, groups:  SiteID:BlockID, 32; BlockID, 13
+    
+    Overdispersion parameter for nbinom2 family (): 0.642 
+    
+    Conditional model:
+                                      Estimate Std. Error z value Pr(>|z|)    
+    (Intercept)                        -0.6980     0.5830  -1.197 0.231211    
+    m_tcg_2000_2010_h12_full           -1.3919     0.2754  -5.055 4.31e-07 ***
+    Year2018                            1.7341     0.4789   3.621 0.000293 ***
+    m_tcg_2000_2010_h12_full:Year2018   0.4055     0.3675   1.103 0.269811    
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 ![](Defoliation-Models_files/figure-gfm/Panel_Plot_Top_Alt-1.png)<!-- -->
 
