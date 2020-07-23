@@ -1923,8 +1923,6 @@ m_egg.pred <- glmmTMB(Abundance ~ EggMasses * Year + (1|SiteID),
 m_egg.pred.17 <- glmmTMB(Abundance ~ EggMasses + (1|SiteID), 
     family = nbinom2, data = ly.comb %>% filter(Year == 2017))
 
-
-
 ```
 
 ```{r Egg_Predictor_Model_2018, echo = F, comment = ""}
