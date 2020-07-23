@@ -441,9 +441,6 @@ AIC.quabbin <- AICtab(QuabModBeta, base = TRUE, weights = TRUE) %>%
     rownames_to_column(var = "model")
 
 
-# Write to CSV
-write.csv(AIC.quabbin, file = "data/QuabAICv3_0.csv", row.names = FALSE)
-
 # Display
 AIC.quabbin %>%
     
@@ -473,9 +470,8 @@ r2.quabbin  <- sapply(QuabModBeta, FUN = r2)
 
 ```{r Quabbin_R2_Table, echo = F, comment = ""}
 
-# Show a table of R2
 # Convert the R^2 data to a more readable format
-r2.quabbin %>% 
+AIC.quabbin <- r2.quabbin %>% 
 
     # Transpose, making rows to columns and vice versa
     t() %>% 
@@ -491,13 +487,29 @@ r2.quabbin %>%
 
     # Reorder columns
     select(baseline, R2_marginal, R2_conditional) %>%
+  
+    # Add in the AIC data
+    left_join(AIC.quabbin %>% rename(baseline = model), by = "baseline") %>%
+  
+    # Order by dAIC
+    arrange(dAIC)
 
+
+# Write to CSV
+write.csv(AIC.quabbin, file = "data/QuabAICv3_0.csv", row.names = FALSE)
+
+
+# Show a table of R^2
+AIC.quabbin %>%
+  
+    # Only keep the R^2 columns
+    select(baseline, R2_marginal, R2_conditional) %>%
+  
     # Sort by R2_marginal descending
     arrange(desc(R2_marginal)) %>%
     
     # Print out a table
     kable(digits = 2)
-
 
 ```
 
@@ -712,7 +724,7 @@ for (model.score in model.scores) {
 
     # Splice in each baseline column name into the model formula
     model.formula <- as.formula(paste0("Abundance ~ ", model.score, 
-        " * Year + (1|BlockID/SiteID)"))
+        " * Year + (1|SiteID)"))
 
     # Print out the model formula, for debugging
     #print(model.formula)
@@ -739,7 +751,7 @@ for (model.score in model.scores) {
 
     # Splice in each baseline column name into the model formula
     model.formula <- as.formula(paste0("Abundance ~ ", model.score, 
-        " + (1|BlockID/SiteID)"))
+        " + (1|SiteID)"))
 
     # Print out the model formula, for debugging
     #print(model.formula)
@@ -766,7 +778,7 @@ for (model.score in model.scores) {
 
     # Splice in each baseline column name into the model formula
     model.formula <- as.formula(paste0("Abundance ~ ", model.score, 
-        " + (1|BlockID/SiteID)"))
+        " + (1|SiteID)"))
 
     # Print out the model formula, for debugging
     #print(model.formula)
@@ -802,9 +814,6 @@ AIC.burlap <- AICtab(burlapmodels, base = TRUE, weights = TRUE) %>%
     rownames_to_column(var = "model")
 
 
-# Write to CSV
-write.csv(AIC.burlap, file = "data/CTBurlap32ModelsAIC.csv", row.names = FALSE)
-
 # Display
 AIC.burlap %>%
     
@@ -828,9 +837,6 @@ AIC.burlap.17 <- AICtab(burlapmodels17, base = TRUE, weights = TRUE) %>%
     rownames_to_column(var = "model")
 
 
-# Write to CSV
-write.csv(AIC.burlap.17, file = "data/CTBurlap32ModelsAIC_2017.csv", row.names = FALSE)
-
 # Display
 AIC.burlap.17 %>%
     
@@ -853,9 +859,6 @@ AIC.burlap.18 <- AICtab(burlapmodels18, base = TRUE, weights = TRUE) %>%
     # Make the model rownames into a column
     rownames_to_column(var = "model")
 
-
-# Write to CSV
-write.csv(AIC.burlap.18, file = "data/CTBurlap32ModelsAIC_2018.csv", row.names = FALSE)
 
 # Display
 AIC.burlap.18 %>%
@@ -886,9 +889,8 @@ r2.burlap  <- sapply(burlapmodels, FUN = r2)
 
 ```{r Burlap_R2_Table, echo = F, comment = ""}
 
-# Show a table of R2
 # Convert the R^2 data to a more readable format
-r2.burlap %>% 
+AIC.burlap <- r2.burlap %>% 
 
     # Transpose, making rows to columns and vice versa
     t() %>% 
@@ -904,7 +906,24 @@ r2.burlap %>%
 
     # Reorder columns
     select(baseline, R2_marginal, R2_conditional) %>%
+  
+    # Add in the AIC data
+    left_join(AIC.burlap %>% rename(baseline = model), by = "baseline") %>%
+  
+    # Order by dAIC
+    arrange(dAIC)
 
+
+# Write to CSV
+write.csv(AIC.burlap, file = "data/CTBurlap32ModelsAIC.csv", row.names = FALSE)
+
+
+# Show a table of R^2
+AIC.burlap %>%
+  
+    # Only keep the R^2 columns
+    select(baseline, R2_marginal, R2_conditional) %>%
+  
     # Sort by R2_marginal descending
     arrange(desc(R2_marginal)) %>%
     
@@ -925,9 +944,8 @@ r2.burlap.17  <- sapply(burlapmodels17, FUN = r2)
 
 ```{r Burlap_R2_Table_2017, echo = F, comment = ""}
 
-# Show a table of R2
 # Convert the R^2 data to a more readable format
-r2.burlap.17 %>% 
+AIC.burlap.17 <- r2.burlap.17 %>% 
 
     # Transpose, making rows to columns and vice versa
     t() %>% 
@@ -943,7 +961,24 @@ r2.burlap.17 %>%
 
     # Reorder columns
     select(baseline, R2_marginal, R2_conditional) %>%
+  
+    # Add in the AIC data
+    left_join(AIC.burlap.17 %>% rename(baseline = model), by = "baseline") %>%
+  
+    # Order by dAIC
+    arrange(dAIC)
 
+
+# Write to CSV
+write.csv(AIC.burlap.17, file = "data/CTBurlap32ModelsAIC_2017.csv", row.names = FALSE)
+
+
+# Show a table of R^2
+AIC.burlap.17 %>%
+  
+    # Only keep the R^2 columns
+    select(baseline, R2_marginal, R2_conditional) %>%
+  
     # Sort by R2_marginal descending
     arrange(desc(R2_marginal)) %>%
     
@@ -967,9 +1002,9 @@ r2.burlap.18  <- sapply(burlapmodels18, FUN = r2)
 
 ```{r Burlap_R2_Table_2018, echo = F, comment = ""}
 
-# Show a table of R2
+
 # Convert the R^2 data to a more readable format
-r2.burlap.18 %>% 
+AIC.burlap.18 <- r2.burlap.18 %>% 
 
     # Transpose, making rows to columns and vice versa
     t() %>% 
@@ -985,7 +1020,24 @@ r2.burlap.18 %>%
 
     # Reorder columns
     select(baseline, R2_marginal, R2_conditional) %>%
+  
+    # Add in the AIC data
+    left_join(AIC.burlap.18 %>% rename(baseline = model), by = "baseline") %>%
+  
+    # Order by dAIC
+    arrange(dAIC)
 
+
+# Write to CSV
+write.csv(AIC.burlap.18, file = "data/CTBurlap32ModelsAIC_2018.csv", row.names = FALSE)
+
+
+# Show a table of R^2
+AIC.burlap.18 %>%
+  
+    # Only keep the R^2 columns
+    select(baseline, R2_marginal, R2_conditional) %>%
+  
     # Sort by R2_marginal descending
     arrange(desc(R2_marginal)) %>%
     
@@ -1091,7 +1143,7 @@ ggdraw() +
     draw_plot(burlap.top.pred + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
     
     # Add subplot labels
-    draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+    #draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
   
     # Add title
     draw_plot_label("Baseline: ndvi_2000_2010_h13_16d", 0.1, 1, size = 20)
@@ -1194,7 +1246,7 @@ ggdraw() +
     draw_plot(burlap.consensus.pred + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
     
     # Add subplot labels
-    draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+    #draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
   
     # Add title
     draw_plot_label("Baseline: reanalysis", 0.1, 1, size = 20)
@@ -1291,7 +1343,7 @@ ggdraw() +
     draw_plot(burlap.top.pred.17 + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
     
     # Add subplot labels
-    draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+    #draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
   
     # Add title
     draw_plot_label("Baseline: sr_2000_2010_h13_16d", 0.1, 1, size = 20)
@@ -1319,7 +1371,7 @@ for (model.score in model.scores) {
     # Splice in each baseline column name into the model formula
     # TODO: Add year & score:year back into model when we have 2018 data
     model.formula <- as.formula(paste0("EggMasses ~ ", model.score, 
-        " * Year + (1|BlockID/SiteID)"))
+        " * Year + (1|SiteID)"))
 
     # Print out the model formula, for debugging
     #print(model.formula)
@@ -1346,7 +1398,7 @@ for (model.score in model.scores) {
 
     # Splice in each baseline column name into the model formula
     model.formula <- as.formula(paste0("EggMasses ~ ", model.score, 
-        " + (1|BlockID/SiteID)"))
+        " + (1|SiteID)"))
 
     # Print out the model formula, for debugging
     #print(model.formula)
@@ -1373,7 +1425,7 @@ for (model.score in model.scores) {
 
     # Splice in each baseline column name into the model formula
     model.formula <- as.formula(paste0("EggMasses ~ ", model.score, 
-        " + (1|BlockID/SiteID)"))
+        " + (1|SiteID)"))
 
     # Print out the model formula, for debugging
     #print(model.formula)
@@ -1410,15 +1462,11 @@ AIC.egg <- AICtab(eggmodels, base = TRUE, weights = TRUE) %>%
     # Make the model rownames into a column
     rownames_to_column(var = "model")
 
-# Write to CSV
-write.csv(AIC.egg, file = "data/CTEggMasses32ModelsAIC.csv", row.names = FALSE)
-
 # Display
 AIC.egg %>%
     
     # Print out a table
     kable(digits = 2)
-
 
 
 ```
@@ -1436,8 +1484,6 @@ AIC.egg.17 <- AICtab(eggmodels17, base = TRUE, weights = TRUE) %>%
     # Make the model rownames into a column
     rownames_to_column(var = "model")
 
-# Write to CSV
-write.csv(AIC.egg.17, file = "data/CTEggMasses32ModelsAIC_2017.csv", row.names = FALSE)
 
 # Display
 AIC.egg.17 %>%
@@ -1462,8 +1508,6 @@ AIC.egg.18 <- AICtab(eggmodels18, base = TRUE, weights = TRUE) %>%
     # Make the model rownames into a column
     rownames_to_column(var = "model")
 
-# Write to CSV
-write.csv(AIC.egg.18, file = "data/CTEggMasses32ModelsAIC_2018.csv", row.names = FALSE)
 
 # Display
 AIC.egg.18 %>%
@@ -1494,9 +1538,8 @@ r2.egg  <- sapply(eggmodels, FUN = r2)
 
 ```{r Egg_R2_Table, echo = F, comment = ""}
 
-# Show a table of R2
 # Convert the R^2 data to a more readable format
-r2.egg %>% 
+AIC.egg <- r2.egg %>% 
 
     # Transpose, making rows to columns and vice versa
     t() %>% 
@@ -1512,13 +1555,29 @@ r2.egg %>%
 
     # Reorder columns
     select(baseline, R2_marginal, R2_conditional) %>%
+  
+    # Add in the AIC data
+    left_join(AIC.egg %>% rename(baseline = model), by = "baseline") %>%
+  
+    # Order by dAIC
+    arrange(dAIC)
 
+
+# Write to CSV
+write.csv(AIC.egg, file = "data/CTEggMasses32ModelsAIC.csv", row.names = FALSE)
+
+
+# Show a table of R^2
+AIC.egg %>%
+  
+    # Only keep the R^2 columns
+    select(baseline, R2_marginal, R2_conditional) %>%
+  
     # Sort by R2_marginal descending
     arrange(desc(R2_marginal)) %>%
     
     # Print out a table
     kable(digits = 2)
-
 
 ```
 
@@ -1534,9 +1593,9 @@ r2.egg.17  <- sapply(eggmodels17, FUN = r2)
 
 ```{r Egg_R2_Table_2017, echo = F, comment = ""}
 
-# Show a table of R2
+
 # Convert the R^2 data to a more readable format
-r2.egg.17 %>% 
+AIC.egg.17 <- r2.egg.17 %>% 
 
     # Transpose, making rows to columns and vice versa
     t() %>% 
@@ -1552,12 +1611,31 @@ r2.egg.17 %>%
 
     # Reorder columns
     select(baseline, R2_marginal, R2_conditional) %>%
+  
+    # Add in the AIC data
+    left_join(AIC.egg.17 %>% rename(baseline = model), by = "baseline") %>%
+  
+    # Order by dAIC
+    arrange(dAIC)
 
+
+# Write to CSV
+write.csv(AIC.egg.17, file = "data/CTEggMasses32ModelsAIC_2017.csv", 
+    row.names = FALSE)
+
+
+# Show a table of R^2
+AIC.egg.17 %>%
+  
+    # Only keep the R^2 columns
+    select(baseline, R2_marginal, R2_conditional) %>%
+  
     # Sort by R2_marginal descending
     arrange(desc(R2_marginal)) %>%
     
     # Print out a table
     kable(digits = 2)
+
 
 ```
 
@@ -1574,9 +1652,8 @@ r2.egg.18  <- sapply(eggmodels18, FUN = r2)
 
 ```{r Egg_R2_Table_2018, echo = F, comment = ""}
 
-# Show a table of R2
 # Convert the R^2 data to a more readable format
-r2.egg.18 %>% 
+AIC.egg.18 <- r2.egg.18 %>% 
 
     # Transpose, making rows to columns and vice versa
     t() %>% 
@@ -1592,13 +1669,30 @@ r2.egg.18 %>%
 
     # Reorder columns
     select(baseline, R2_marginal, R2_conditional) %>%
+  
+    # Add in the AIC data
+    left_join(AIC.egg.18 %>% rename(baseline = model), by = "baseline") %>%
+  
+    # Order by dAIC
+    arrange(dAIC)
 
+
+# Write to CSV
+write.csv(AIC.egg.18, file = "data/CTEggMasses32ModelsAIC_2018.csv", 
+    row.names = FALSE)
+
+
+# Show a table of R^2
+AIC.egg.18 %>%
+  
+    # Only keep the R^2 columns
+    select(baseline, R2_marginal, R2_conditional) %>%
+  
     # Sort by R2_marginal descending
     arrange(desc(R2_marginal)) %>%
     
     # Print out a table
     kable(digits = 2)
-
 
 ```
 
@@ -1699,7 +1793,7 @@ ggdraw() +
     draw_plot(egg.top.pred + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
     
     # Add subplot labels
-    draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+    #draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
   
     # Add title
     draw_plot_label("Baseline: sr_2000-2010_h13_16d", 0.1, 1, size = 20)
@@ -1799,10 +1893,10 @@ ggdraw() +
     draw_plot(egg.top.pred.17 + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
     
     # Add subplot labels
-    draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+    #draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
   
     # Add title
-    draw_plot_label("Baseline: sr_2000-2010_h13_16d", 0.1, 1, size = 20)
+    draw_plot_label("Baseline: tcg_2000_2010_h12_full", 0.1, 1, size = 20)
 
 
 ```
@@ -1816,8 +1910,26 @@ ggdraw() +
 ```{r Egg_Predictor_Model, echo = F, comment = ""}
 
 # Predict larval abundance with egg mass counts
-m_egg.pred <- glmmTMB(Abundance ~ EggMasses * Year + (1|BlockID/SiteID), 
+m_egg.pred <- glmmTMB(Abundance ~ EggMasses * Year + (1|SiteID), 
     family = nbinom2, data = ly.comb)
+
+
+
+```
+
+```{r Egg_Predictor_Model_2017, echo = F, comment = ""}
+
+# Predict larval abundance with egg mass counts
+m_egg.pred.17 <- glmmTMB(Abundance ~ EggMasses + (1|SiteID), 
+    family = nbinom2, data = ly.comb %>% filter(Year == 2017))
+
+```
+
+```{r Egg_Predictor_Model_2018, echo = F, comment = ""}
+
+# Predict larval abundance with egg mass counts
+m_egg.pred.18 <- glmmTMB(Abundance ~ EggMasses + (1|SiteID), 
+    family = nbinom2, data = ly.comb %>% filter(Year == 2018))
 
 
 
@@ -1831,6 +1943,8 @@ Models are ranked according to how good they are at predicting Lymantria larval 
 
 The column to pay attention to is dAIC, or the difference in AIC between models. A rule of thumb is that models with a dAIC less than 2 are not notably different in their quality, and that models within 6 are similar.
 
+#### Both Years
+
 ```{r Egg_Predictor_AIC, echo = F, comment = ""}
 
 
@@ -1838,6 +1952,52 @@ AICtab(m_egg.pred,
     burlapmodels[['m_ndvi_2000_2010_h13_16d']], 
     burlapmodels[['m_tcg_2005_2015_h13_full']], 
     burlapmodels[['m_reanalysis']],
+    base = TRUE, weights = TRUE, mnames = c("Predict abundance with egg masses", 
+    "ndvi_2000_2010_h13_16d", "tcg_2005_2015_h13_full", "reanalysis")) %>% 
+
+    # Convert AIC table to rowname
+    data.frame %>%
+
+    # Make the model rownames into a column
+    rownames_to_column(var = "model") %>% 
+  
+    kable(digits = 2)
+
+```
+
+
+#### 2017 Only
+
+```{r Egg_Predictor_AIC_2017, echo = F, comment = ""}
+
+
+AICtab(m_egg.pred.17, 
+    burlapmodels17[['m_ndvi_2000_2010_h13_16d']], 
+    burlapmodels17[['m_tcg_2005_2015_h13_full']], 
+    burlapmodels17[['m_reanalysis']],
+    base = TRUE, weights = TRUE, mnames = c("Predict abundance with egg masses", 
+    "ndvi_2000_2010_h13_16d", "tcg_2005_2015_h13_full", "reanalysis")) %>% 
+
+    # Convert AIC table to rowname
+    data.frame %>%
+
+    # Make the model rownames into a column
+    rownames_to_column(var = "model") %>% 
+  
+    kable(digits = 2)
+
+```
+
+
+#### 2018 Only
+
+```{r Egg_Predictor_AIC_2018, echo = F, comment = ""}
+
+
+AICtab(m_egg.pred.18, 
+    burlapmodels18[['m_ndvi_2000_2010_h13_16d']], 
+    burlapmodels18[['m_tcg_2005_2015_h13_full']], 
+    burlapmodels18[['m_reanalysis']],
     base = TRUE, weights = TRUE, mnames = c("Predict abundance with egg masses", 
     "ndvi_2000_2010_h13_16d", "tcg_2005_2015_h13_full", "reanalysis")) %>% 
 
@@ -1862,6 +2022,8 @@ We actually get two R<sup>2</sup> numbers for these models, a marginal and a con
 
 In our case, we're mostly interested in the marginal R<sup>2</sup>. This is going to tell us how well  egg mass counts explain the abundance of Lymantria larva.
 
+#### Both Years
+
 ```{r Egg_Predictor_R2, echo = F, comment = ""}
 
 formula(m_egg.pred)
@@ -1869,10 +2031,28 @@ r2(m_egg.pred)
 
 ```
 
+#### 2017 Only
+
+```{r Egg_Predictor_R2_2017, echo = F, comment = ""}
+
+r2(m_egg.pred.17)
+
+```
+
+#### 2018 Only
+
+```{r Egg_Predictor_R2_2018, echo = F, comment = ""}
+
+r2(m_egg.pred.18)
+
+```
+
+
+
 ### Plots
 
 
-
+#### Both Years
 
 ```{r Egg_Predictor_Param, echo = F, comment = ""}
 
@@ -1965,13 +2145,123 @@ ggdraw() +
     draw_plot(egg.predictor.pred + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
     
     # Add subplot labels
-    draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+    #draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
   
     # Add title
     draw_plot_label("Predict Larval Abundance with Egg Masses", -0.1, 1, size = 20)
 
 
 ```
+
+
+
+
+#### 2017 Only
+
+```{r Egg_Predictor_Param_2017, echo = F, comment = ""}
+
+# Plot fixed effects
+egg.predictor.param.17 <- plot_model(m_egg.pred.17, 
+    type = "est", show.values = T, show.p = T, plvline.color = "gray60", 
+    transform = NULL, value.offset = 0.2,
+    axis.labels = c("Egg Masses")) + 
+    
+    # Add title, axis label
+    labs(y = "Parameter Estimate", 
+         title = "Predict Larval Abundance with Egg Masses") +
+
+    # Add theme
+    ggplot.theme
+
+
+# Display Plot
+#egg.predictor.param.17
+
+
+```
+
+```{r Egg_Predictor_Pred_2017, echo = F, comment = ""}
+
+# Make a dummy sr dataset for interaction/prediction plots
+egg.predictor.17 <- expand.grid(
+  
+    # Range of egg mass counts
+    #range(ly.comb$EggMasses[ly.comb$Year == 2017], na.rm = T)
+    EggMasses = seq(0, 181, by = 20),
+    
+    # Model without random factors (the mean random effect)
+    BlockID = NA, SiteID = NA) %>%
+
+    # Augment with fitted values and confidence intervals
+    augment.conf(m_egg.pred.17)
+
+
+# Make a prediction plot for sr
+egg.predictor.pred.17 <- m_egg.pred.17 %>%
+  
+    # Augment the actual data, adding fitted values and residuals
+    augment(type.predict = "response") %>%
+    
+    # Plot defoliation against model fitted values of abundance
+    ggplot(aes(x = EggMasses, y = .fitted)) +
+      
+        # Add model prediction trend line and 95% confidence intervals
+        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
+            stat = "identity", data = egg.predictor.17) +
+        
+        # Add fitted data values as scatterplot
+        geom_point() +
+        
+        # Add errorbars to the fitted values equal to the residuals
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
+        
+        # Add axis labels
+        labs(x = "Egg Masses", y = "Fitted Larval Abundance", 
+            title = "Predict Larval Abundance with Egg Masses") +
+    
+        # Put legend inside the plot panel
+        theme(legend.position = c(0.8, 0.8)) +
+        
+        # Add Theme
+        ggplot.theme
+
+
+# Show plot
+#egg.predictor.pred.17
+
+```
+
+
+```{r Egg_Predictor_Combined_2017, echo = F, comment = "", fig.height = 5, fig.width = 10}
+
+# Combine plots
+ggdraw() + 
+    
+    # Add the two plots
+    draw_plot(egg.predictor.param.17 + ggtitle(""), 0, 0, 0.4, 0.95) +
+    draw_plot(egg.predictor.pred.17 + ggtitle(""), 0.4, 0, 0.6, 0.95) + 
+    
+    # Add subplot labels
+    #draw_plot_label(c("A", "B"), c(0.11, 0.45), c(0.9, 0.9), size = 24) +
+  
+    # Add title
+    draw_plot_label("Predict Larval Abundance with Egg Masses", -0.1, 1, size = 20)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Combined Panel Plots
 
@@ -2045,8 +2335,10 @@ combined.param.top <- burlap.coef %>% rbind(egg.coef, quabbin.coef) %>%
   
         ggplot.theme
 
+insight::get_variance(eggmodels17[['m_reanalysis']], name_fun = "r2()", name_full = "r-squared")
 
-
+summary(eggmodels[['m_reanalysis']])
+summary(eggmodels[['m_tcg_2000_2010_h12_full']])
 ```
 
 
