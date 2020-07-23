@@ -48,25 +48,55 @@ with TCG (etc).
 
 | metric |    imp\_q |    imp\_c |
 | :----- | --------: | --------: |
-| evi    | 0.0045906 | 0.1831750 |
-| ndvi   | 0.0000000 | 0.0529741 |
-| sr     | 0.0000000 | 0.4953497 |
 | tcg    | 0.9517979 | 0.2630967 |
+| evi    | 0.0045906 | 0.1831750 |
+| sr     | 0.0000000 | 0.4953497 |
+| ndvi   | 0.0000000 | 0.0529741 |
 
 | harmonic |    imp\_q |    imp\_c |
 | :------- | --------: | --------: |
-| h12      | 0.0000000 | 0.4141522 |
 | h13      | 0.9563885 | 0.5804432 |
+| h12      | 0.0000000 | 0.4141522 |
 
 | period |    imp\_q |    imp\_c |
 | :----- | --------: | --------: |
-| 16d    | 0.0000000 | 0.5919109 |
 | full   | 0.9563885 | 0.4026845 |
+| 16d    | 0.0000000 | 0.5919109 |
 
 | base      |    imp\_q |    imp\_c |
 | :-------- | --------: | --------: |
-| 2000-2010 | 0.0000000 | 0.7440675 |
 | 2005-2015 | 0.9563885 | 0.2505279 |
+| 2000-2010 | 0.0000000 | 0.7440675 |
+
+This analysis provides a little more insight into why there are
+disagreements between the models, but it is still hard to draw general
+conclusions. For Quabin, it appears that the best model combines TCG,
+h13, 2015 and full - which is no surprise given that is what the best
+model includes and that model is the best by a long way (and explains
+about 60% of the variation using just the fixed effects). The FEN data
+are less clear, which is perhaps unsurprising given that the variable we
+are predicting (defoliator abundance) is a little more removed from the
+predictor (defoliation). I would probably interpret this as that there
+is no clear “right” or “wrong” way of measuring gypsy moth abundance
+from the ground - they all do okay (\(R^2 = 0.31\) for the worst
+performing model and \(0.45\) for the best).
+
+However, we can say this about the individual metrics. NDVI performs
+poorly in both sites - do not use it could be a recommendation, although
+that has to be tempered by the 2018 results. The other decisions seem
+less impactful.
+
+One thought I had looking at the aggregate results was that the
+difference between CT-FEN and Quabin might partly reflect the larger
+spatial scope, and hence heterogeniety, of the CT project. There is no
+“one-size-fits-all” solution when looking at a variety of forests.
+
+So in terms of recommendations \* There is no single method that works
+best in all cases. However, the choice is not critical to the measures
+being useful. \* Perhaps avoid NDVI as a metric, although if that is all
+you have, that isn’t the end of the world. \* If you are analysing data
+from a wide variety of sites, then you might want to use a bunch of
+different metrics.
 
 ## Session Information
 
