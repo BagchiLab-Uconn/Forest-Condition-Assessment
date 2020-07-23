@@ -1,0 +1,167 @@
+---
+title: "Analysis Template"
+author: ""
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+graphics: yes
+output:
+  github_document:
+    toc: yes
+  html_document:
+    keep_md: yes
+    theme: readable
+  html_notebook:
+    code_folding: hide
+    theme: readable
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = F}
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@ Knitr Options
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Set root directory to the project directory
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+
+
+# Set default knitr options: 
+# Suppress warnings and messages, cache chunks, 
+#  set default figure size to 6x8 at 300 dpi, and save a png and pdf
+knitr::opts_chunk$set(warning = F, message = F, collapse = T, cache = T,
+    fig.height = 6, fig.width = 8, dpi = 300, # 6x8" @ 300dpi:1800x2400=4.3MP
+    dev = c('png', 'pdf'), dev.args = list(pdf = list(onefile = F)))
+
+```
+
+
+
+# Overview
+
+Quabin and the CT FEN data sets each result in different model sets. This analysis explores whether we can use model weights and variable importance to get aggregated conclusions from the analysis of the two.
+
+# Summary of Results
+
+* The two data sets result in totally different model ranks - that is partly because Quabin has a clear winning model (with a weight of >90%) while the FEN data's best model only has a weight of 15%. 
+
+
+ 
+
+```{r Main_Code, include = F, cache = F}
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@ Setup - This code is run, but output is hidden
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Load Packages
+library(tidyverse) # Needed for data wrangling: dplyr, tidyr, ggplot2
+library(cowplot) # Needed for publication-quality ggplots
+library(ggthemes) # Needed for tufte_theme
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@ Data Preparation
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Import datasets
+#data <- read.csv("data/file.csv")
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@ ggPlot Theme
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ggplot.theme <- theme(
+    
+    # Text size for axis ticks
+    axis.text.y = element_text(size = 14),
+    axis.text.x = element_text(size = 14),
+    
+    # Text size for axis labels
+    # Also move them away from the axes a bit for more space
+    axis.title.x = element_text(size = 18, face = "bold", vjust = -1),
+    axis.title.y = element_text(size = 18, face = "bold", vjust = 1.5),
+    
+    # Plot title size
+    plot.title = element_text(size = 20, face = "bold"),
+    
+    # Margins for top, right, bottom, left
+    plot.margin = grid::unit(c(1.5, 1.5, 1.5, 1.2), "lines"), 
+    
+    # Legend text size
+    legend.text = element_text(size = 14),
+    legend.text.align = 0, 
+    legend.title = element_text(size = 16, face = "bold"),
+    legend.key.size = grid::unit(1.4, "line"),
+    legend.key = element_blank()
+    )
+theme_set(theme_tufte() + ggplot.theme)
+
+```
+
+
+```{r Data_Wrangling, echo = F, comment = ""}
+
+# Put data wrangling code here
+quab <- read.csv("data/QuabAICv3_0.csv")
+ct17 <- read.csv("data/CTBurlap32ModelsAIC_2017.csv")
+
+both <- left_join(quab, ct17, by="baseline", suffix = c("q", "c"))
+
+labs <- str_split(both$baseline, pattern="_", simplify=TRUE)[,-1] %>% as.data.frame()
+both <- bind_cols(mutate(labs, base = paste(V2, V3, sep="-")) %>% select(-V2, -V3) %>% 
+    rename(metric=V1, harmonic=V4, period=V5), 
+    both)
+
+```
+
+# Analyses
+
+## Weights comparison
+
+Plotting the weights from the two data sets. There is little correlation between them.
+
+```{r quab_ct17_wtcomp, echo = F}
+both %>% ggplot(., aes(x=weightc, y=weightq)) + geom_point() + theme_bw()
+
+cor(both$weightc, both$weightq) ## negative correlation!
+cor(both$weightc, both$weightq, method="spearman") ## ranks are slightly correlated though
+```
+
+Overall, it looks to me like we are on a hiding to nothing in trying to get an average across the two here. They are so different that I think our conclusion has to be that there is no one size fits all (boo). That seems to be a change from the last time I looked at these results in detail, but perhaps I was just not seeing the patterns.
+
+## Variable importance
+We can calculate the importance of each variable by adding up the weights of the models that contain it. Here, we can do that by adding up within categores - i.e. compare the sum of weights of models with NDVI with TCG (etc).
+
+```{r variable_importance, echo = F}
+both <- filter(both, metric != "reanalysis")
+
+metric_comp <- both %>% group_by(metric) %>% 
+  summarize(imp_q = sum(weightq), imp_c=sum(weightc))
+harmonic_comp <- both %>% group_by(harmonic) %>% 
+  summarize(imp_q = sum(weightq), imp_c=sum(weightc))
+period_comp <- both %>% group_by(period) %>% 
+  summarize(imp_q = sum(weightq), imp_c=sum(weightc))
+base_comp <- both %>% group_by(base) %>% 
+  summarize(imp_q = sum(weightq), imp_c=sum(weightc))
+
+knitr::kable(metric_comp)
+knitr::kable(harmonic_comp)
+knitr::kable(period_comp)
+knitr::kable(base_comp)
+
+
+```
+
+
+
+
+## Session Information
+
+```{r Session_Info, echo = F, comment = ""}
+
+# Add session information to help with reproduceability
+sessionInfo()
+
+
+```
+
+
