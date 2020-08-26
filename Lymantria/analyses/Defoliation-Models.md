@@ -1,7 +1,7 @@
 Defoliation Model Comparison
 ================
 James Mickley and Audrey Barker Plotkin
-July 23, 2020
+July 29, 2020
 
 
 
@@ -76,11 +76,12 @@ July 23, 2020
 This analysis compares Val Pasquarella’s defoliation data from Landsat
 satellite to the following:
 
-1 Defoliation data collected in late September 2017 from 483 points
-within 6 ‘hotspots’ in the Quabbin Watershed Forest (Rich MacLean, DCR
-Watershed Forester field data lead). 2 Lymantria larval and egg mass
-abundance data collected in 2017 and 2018 from 12 trees each in 32
-forest fragments of varying size in Eastern Connecticut.
+1.  Defoliation data collected in late September 2017 from 483 points
+    within 6 ‘hotspots’ in the Quabbin Watershed Forest (Rich MacLean,
+    DCR Watershed Forester field data lead).
+2.  Lymantria larval and egg mass abundance data collected in 2017 and
+    2018 from 12 trees each in 32 forest fragments of varying size in
+    Eastern Connecticut.
 
 Here, we examine how varying the following components of the Landsat
 change-in-condition model affect how well that predicts defoliation or
@@ -225,6 +226,8 @@ the canopy defoliation.
 ### Plots from Top Baselines
 
 #### Top Quabbin Baseline: tcg\_2005\_2015\_h13\_full
+
+![](Defoliation-Models_files/figure-gfm/Quabbin_Top_Pred-1.png)<!-- -->
 
 ![](Defoliation-Models_files/figure-gfm/Quabbin_Top_Combined-1.png)<!-- -->
 
@@ -511,6 +514,8 @@ the two ndvi\_2000-2010\_h13 baselines.
 
 #### Top Burlap Baseline: sr\_2000\_2010\_h13\_16d
 
+![](Defoliation-Models_files/figure-gfm/Burlap_Top_Pred_2017-1.png)<!-- -->
+
 ![](Defoliation-Models_files/figure-gfm/Burlap_Top_Combined_2017-1.png)<!-- -->
 
 #### Consensus Baseline:
@@ -790,11 +795,63 @@ the bottom six NDVI models.
 
 ### Top Egg Mass Baseline: tcg\_2000\_2010\_h12\_full
 
+![](Defoliation-Models_files/figure-gfm/Egg_Top_Pred_2017-1.png)<!-- -->
+
 ![](Defoliation-Models_files/figure-gfm/Egg_Top_Combined_2017-1.png)<!-- -->
 
 #### Consensus Baseline:
 
 ## Egg Mass Predictor
+
+``` 
+ Family: nbinom2  ( log )
+Formula:          Abundance ~ EggMasses + (1 | SiteID)
+Data: ly.comb %>% filter(Year == 2017)
+
+     AIC      BIC   logLik deviance df.resid 
+  1252.1   1262.3   -622.1   1244.1       91 
+
+Random effects:
+
+Conditional model:
+ Groups Name        Variance Std.Dev.
+ SiteID (Intercept) 0.7875   0.8874  
+Number of obs: 95, groups:  SiteID, 32
+
+Overdispersion parameter for nbinom2 family ():  2.4 
+
+Conditional model:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) 5.224182   0.182449  28.634  < 2e-16 ***
+EggMasses   0.008946   0.003107   2.879  0.00398 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+``` 
+ Family: nbinom2  ( log )
+Formula:          Abundance ~ EggMasses + (1 | SiteID)
+Data: ly.comb %>% filter(Year == 2018)
+
+     AIC      BIC   logLik deviance df.resid 
+   828.9    839.2   -410.5    820.9       92 
+
+Random effects:
+
+Conditional model:
+ Groups Name        Variance Std.Dev.
+ SiteID (Intercept) 1.439    1.199   
+Number of obs: 96, groups:  SiteID, 32
+
+Overdispersion parameter for nbinom2 family (): 2.77 
+
+Conditional model:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) 2.925336   0.231707  12.625   <2e-16 ***
+EggMasses   0.006688   0.003728   1.794   0.0728 .  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
 
 ### AIC
 
@@ -824,19 +881,19 @@ similar.
 
 | model                             |     AIC |  dAIC | df | weight |
 | :-------------------------------- | ------: | ----: | -: | -----: |
-| ndvi\_2000\_2010\_h13\_16d        | 1241.72 |  0.00 |  4 |   0.86 |
-| tcg\_2005\_2015\_h13\_full        | 1246.27 |  4.55 |  4 |   0.09 |
-| reanalysis                        | 1247.79 |  6.08 |  4 |   0.04 |
-| Predict abundance with egg masses | 1252.11 | 10.39 |  4 |   0.00 |
+| sr\_2000\_2010\_h13\_16d          | 1238.48 |  0.00 |  4 |   0.91 |
+| tcg\_2000\_2010\_h12\_full        | 1243.46 |  4.98 |  4 |   0.07 |
+| tcg\_2005\_2015\_h13\_full        | 1246.27 |  7.79 |  4 |   0.02 |
+| Predict abundance with egg masses | 1252.11 | 13.63 |  4 |   0.00 |
 
 #### 2018 Only
 
 | model                             |    AIC | dAIC | df | weight |
 | :-------------------------------- | -----: | ---: | -: | -----: |
-| ndvi\_2000\_2010\_h13\_16d        | 823.00 | 0.00 |  4 |   0.93 |
+| ndvi\_2000\_2010\_h13\_16d        | 823.00 | 0.00 |  4 |   0.91 |
 | Predict abundance with egg masses | 828.92 | 5.92 |  4 |   0.05 |
+| tcg\_2005\_2015\_h13\_16d         | 830.06 | 7.05 |  4 |   0.03 |
 | tcg\_2005\_2015\_h13\_full        | 831.78 | 8.78 |  4 |   0.01 |
-| reanalysis                        | 832.08 | 9.07 |  4 |   0.01 |
 
 ### R<sup>2</sup>
 
@@ -885,6 +942,8 @@ Lymantria larva.
 ![](Defoliation-Models_files/figure-gfm/Egg_Predictor_Combined-1.png)<!-- -->
 
 #### 2017 Only
+
+![](Defoliation-Models_files/figure-gfm/Egg_Predictor_Pred_2017-1.png)<!-- -->
 
 ![](Defoliation-Models_files/figure-gfm/Egg_Predictor_Combined_2017-1.png)<!-- -->
 

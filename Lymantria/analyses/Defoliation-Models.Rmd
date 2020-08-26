@@ -105,8 +105,8 @@ write.csv(burlap, file = "data/burlap-surveys.csv", row.names = F)
 
 This analysis compares Val Pasquarella's defoliation data from Landsat satellite to the following:
 
-1 Defoliation data collected in late September 2017 from 483 points within 6 'hotspots' in the Quabbin Watershed Forest (Rich MacLean, DCR Watershed Forester field data lead).
-2 Lymantria larval and egg mass abundance data collected in 2017 and 2018 from 12 trees each in 32 forest fragments of varying size in Eastern Connecticut. 
+1. Defoliation data collected in late September 2017 from 483 points within 6 'hotspots' in the Quabbin Watershed Forest (Rich MacLean, DCR Watershed Forester field data lead).
+2. Lymantria larval and egg mass abundance data collected in 2017 and 2018 from 12 trees each in 32 forest fragments of varying size in Eastern Connecticut. 
 
 Here, we examine how varying the following components of the Landsat change-in-condition model affect how well that predicts defoliation or Lymantria abundance on the ground:
 
@@ -588,7 +588,7 @@ quabbin.top.pred <- QuabModBeta[['m_tcg_2005_2015_h13_full']] %>%
 
 
 # Show plot
-#quabbin.top.pred
+quabbin.top.pred
 
 ```
 
@@ -1328,7 +1328,7 @@ burlap.top.pred.17 <- burlapmodels17[['m_sr_2000_2010_h13_16d']] %>%
         ggplot.theme
 
 # Show plot
-#burlap.top.pred.17
+burlap.top.pred.17
 
 ```
 
@@ -1878,7 +1878,7 @@ egg.top.pred.17 <- eggmodels17[['m_tcg_2000_2010_h12_full']] %>%
 
 
 # Show plot
-#egg.top.pred.17
+egg.top.pred.17
 
 ```
 
@@ -1923,6 +1923,7 @@ m_egg.pred <- glmmTMB(Abundance ~ EggMasses * Year + (1|SiteID),
 m_egg.pred.17 <- glmmTMB(Abundance ~ EggMasses + (1|SiteID), 
     family = nbinom2, data = ly.comb %>% filter(Year == 2017))
 
+summary(m_egg.pred.17)
 ```
 
 ```{r Egg_Predictor_Model_2018, echo = F, comment = ""}
@@ -1931,7 +1932,7 @@ m_egg.pred.17 <- glmmTMB(Abundance ~ EggMasses + (1|SiteID),
 m_egg.pred.18 <- glmmTMB(Abundance ~ EggMasses + (1|SiteID), 
     family = nbinom2, data = ly.comb %>% filter(Year == 2018))
 
-
+summary(m_egg.pred.18)
 
 ```
 
@@ -1972,11 +1973,12 @@ AICtab(m_egg.pred,
 
 
 AICtab(m_egg.pred.17, 
-    burlapmodels17[['m_ndvi_2000_2010_h13_16d']], 
+    burlapmodels17[['m_sr_2000_2010_h13_16d']], 
     burlapmodels17[['m_tcg_2005_2015_h13_full']], 
-    burlapmodels17[['m_reanalysis']],
+    burlapmodels17[['m_tcg_2000_2010_h12_full']],
     base = TRUE, weights = TRUE, mnames = c("Predict abundance with egg masses", 
-    "ndvi_2000_2010_h13_16d", "tcg_2005_2015_h13_full", "reanalysis")) %>% 
+    "sr_2000_2010_h13_16d", "tcg_2005_2015_h13_full", 
+    "tcg_2000_2010_h12_full")) %>% 
 
     # Convert AIC table to rowname
     data.frame %>%
@@ -1997,9 +1999,10 @@ AICtab(m_egg.pred.17,
 AICtab(m_egg.pred.18, 
     burlapmodels18[['m_ndvi_2000_2010_h13_16d']], 
     burlapmodels18[['m_tcg_2005_2015_h13_full']], 
-    burlapmodels18[['m_reanalysis']],
+    burlapmodels18[['m_tcg_2005_2015_h13_16d']],
     base = TRUE, weights = TRUE, mnames = c("Predict abundance with egg masses", 
-    "ndvi_2000_2010_h13_16d", "tcg_2005_2015_h13_full", "reanalysis")) %>% 
+    "ndvi_2000_2010_h13_16d", "tcg_2005_2015_h13_full", 
+    "tcg_2005_2015_h13_16d")) %>% 
 
     # Convert AIC table to rowname
     data.frame %>%
@@ -2227,7 +2230,7 @@ egg.predictor.pred.17 <- m_egg.pred.17 %>%
 
 
 # Show plot
-#egg.predictor.pred.17
+egg.predictor.pred.17
 
 ```
 
