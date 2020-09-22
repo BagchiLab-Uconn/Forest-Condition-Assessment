@@ -7,5 +7,5 @@ Analyzing *Lymantria dispar* population patterns and mortality from Burlap Trap 
 * Use the [analysis template](analyses/Analysis-Template.Rmd) in analyses/ as a starting point.
 
 #### List of Analyses:
-* [Lymantria Mortality](analyses/Lymantria-Death.md) - An analysis of pathogen mortality rates for *Lymantria*
-* [Landsat Defoliation](analyses/Lymantria-Defoliation.md) - An analysis exploring the interactions between Landsat defoliation data from Val Pasquarella and our *Lymantria* abundance and mortality data.
+* [Defoliation Models](analyses/Defoliation-Models.md) - Comparison of defoliation models for forest condition assessment
+* [Using AIC weights to pick a winner](analyses/AIC_weights.md) - Can AIC model weights be used to pick a consensus best model parameterization?
