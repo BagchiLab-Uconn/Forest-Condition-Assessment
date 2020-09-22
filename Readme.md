@@ -1,5 +1,7 @@
-# Burlap Surveys
-Analyzing *Lymantria dispar* population patterns and mortality from Burlap Trap data.
+# Forest Condition Assessment
+An accompanying code and data repository for the paper *Assessing a Landsat-based harmonic modeling approach for forest condition monitoring using defoliator abundance and defoliation measurements*. 
+
+Here, we compare the relative predictive ability of various parameterizations of remote-sensed forest condition assessments on abundance and damage from a *Lymantria dispar* outbreak in southern New England. 
 
 #### Instructions:
 * Data files should be stored inside the [data](data/) directory.
