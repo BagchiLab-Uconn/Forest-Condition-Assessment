@@ -1,0 +1,268 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var wrs2 = ee.FeatureCollection("projects/ee-valeriepasquarella/assets/wrs2_descending"),
+    geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.MultiPoint(
+        [[-72.23501892402889, 41.807357153800126],
+         [-72.32660683603468, 41.887064648114055]]),
+    geometry2 = 
+    /* color: #98ff00 */
+    /* shown: false */
+    ee.Geometry.MultiPoint(
+        [[-72.79371888443406, 41.45839948388944],
+         [-72.87617530258682, 41.440433719733065],
+         [-72.67307342716757, 41.53731269471713],
+         [-72.68298687168661, 41.5335541749718],
+         [-72.38824345780222, 41.710269600644054],
+         [-72.09144209287129, 41.63731569463808],
+         [-72.13930647228736, 41.89546431904902],
+         [-72.14557211254615, 41.908943540715654],
+         [-72.32601154712515, 41.88441748688317],
+         [-72.3272131767638, 41.88984878655532],
+         [-72.34701286232846, 41.75838147316652],
+         [-72.34306513638933, 41.79519377132911],
+         [-72.2347324735261, 41.807028807960684],
+         [-72.24777873817453, 41.82545173577376],
+         [-72.1322923529269, 41.74219180199942],
+         [-72.12225016237514, 41.76697142997178],
+         [-72.43001517659648, 41.845490913367875],
+         [-72.43444804673504, 41.8390471456138],
+         [-72.46392319440594, 41.561888340964714],
+         [-72.63119409792394, 41.47364890181215],
+         [-72.54433344118566, 41.467989415686596],
+         [-72.53815363161534, 41.432735134448755],
+         [-72.46209913955548, 41.605947098179534],
+         [-72.50150595331426, 41.69487535311596],
+         [-72.50296507501837, 41.6875687265036],
+         [-72.48197947168585, 41.67586998686399],
+         [-72.45438674009363, 41.72239626416655],
+         [-72.40314581907312, 41.71208143095789],
+         [-72.44309956680267, 41.80796931344041],
+         [-72.0768633996704, 41.66770067899509],
+         [-72.13877285637338, 41.6201344985561],
+         [-72.30583942562235, 41.900198590534764]]),
+    geometry3 = 
+    /* color: #0b4a8b */
+    /* shown: false */
+    ee.Geometry.MultiPoint(
+        [[-72.33819377429367, 42.37012139138924],
+         [-72.2739924193132, 42.34576634735109],
+         [-72.32986819751144, 42.41576165519164],
+         [-72.38145244128586, 42.31581700755144],
+         [-72.24406919823902, 42.42906783347034],
+         [-72.38512701852467, 42.38456936795803]]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// |
+// | Landsat Time Series Assessment -- Compare mapped results
+// | [valpasq@bu.edu], 2020
+// |
+// |
+// | This script loads mapped results for a specified year for comparison.
+
+
+// ------------------------------------- Imports  ------------------------------------- 
+
+var RESULTS_COLLECTION = ee.ImageCollection('projects/sites-project/baselines_v6-3_by_path_monitoring_qa_final')
+var ma_quabbin = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/HF-GM/PlotDefHarvSimple')
+var ct_burlap = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/CT-GM/FEN_BurlapSurvey_Coords')
+var study_area = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/simplified_southernNE')
+var NLCD = ee.Image('USGS/NLCD/NLCD2011')
+var STATES = ee.FeatureCollection('TIGER/2018/States')
+
+// ------------------------------------- Config ------------------------------------- 
+
+var YEAR = 2017
+var MIN_TCC = 75;
+
+// ---------------------------------- Visualization  ---------------------------------- 
+
+var min = -4;
+var max = 0;
+var palette = ['red', 'orange', 'yellow', 'blue']
+var viz = {min: min, max: max, palette: palette};
+
+
+// Set up UI Panel
+// var map = ui.Map();
+var panel = ui.Panel({
+    style: {
+      width: '200px',
+      height: '90px',
+      position: 'top-left',
+      backgroundColor: 'rgba(255, 255, 255, 0.5)'
+    }
+  });
+  
+// Create colorbar for legend.
+function ColorBar(palette) {
+  return ui.Thumbnail({
+    image: ee.Image.pixelLonLat().select(0),
+    params: {
+      bbox: [0, 0, 1, 0.1],
+      dimensions: '100x10',
+      format: 'png',
+      min: 1,
+      max: 0,
+      palette: palette,
+    },
+    style: {stretch: 'horizontal', margin: '2px 2px'},
+  });
+}
+
+// Build legend
+function makeLegend(palette) {
+  var legendTitle = ui.Label({
+    value: 'Detected Change in Forest Condition',
+    style: {
+      fontWeight: 'bold',
+      fontSize: '18px',
+      margin: '0 0 2px 0',
+      padding: '0',
+      backgroundColor: 'rgba(255, 255, 255, 0)'
+    }
+    });
+    
+  var labelPanel = ui.Panel({
+      widgets: [
+        ui.Label('Normal', {margin: '0px 0px', backgroundColor: 'rgba(255, 255, 255, 0)', fontSize: '16px'}),
+        ui.Label('Moderate', {margin: '0px 0px', textAlign: 'center', stretch: 'horizontal', backgroundColor: 'rgba(255, 255, 255, 0)', fontSize: '16px'}),
+        ui.Label('Large', {margin: '0px 0px',backgroundColor: 'rgba(255, 255, 255, 0)', fontSize: '16px'})
+      ],
+      layout: ui.Panel.Layout.flow('horizontal'),
+      style: { backgroundColor: 'rgba(255, 255, 255, 0)'}});
+  
+  return ui.Panel({
+    widgets: [legendTitle, ColorBar(palette), labelPanel],
+    style: {position: 'bottom-right',
+      backgroundColor: 'rgba(255, 255, 255, 0.75)'
+    }
+  });
+}
+
+  
+// Mask based on Tree Canopy Cover
+var tcc_mask = NLCD.select('percent_tree_cover')
+  .clip(study_area)
+  .gte(MIN_TCC)
+  .reproject('EPSG:5070', null, 30);
+
+// Get results
+var selectedResults = RESULTS_COLLECTION
+    .filterMetadata('monitor_year', 'equals', YEAR);
+    
+var names_list = selectedResults
+    .aggregate_array('name')
+    .distinct()
+    .getInfo();
+
+// Select by experiment
+var select = ui.Select({
+  items: names_list,
+  onChange: function(value) {
+    Map.layers().reset();
+
+    select.style().set('stretch', 'horizontal');
+    
+    var assessment = ee.Image(RESULTS_COLLECTION.filterMetadata('name', 'equals', value).first())
+        .updateMask(tcc_mask);
+    
+    Map.addLayer(assessment.select('score_weighted_mean'), viz, value, true);
+    Map.addLayer(tcc_mask.not().selfMask(), {palette: 'black'});
+    // Map.addLayer(tcc_mask, {palette: ['black', 'darkgreen']});
+    
+    
+    redraw();
+    
+}});
+
+// Set up Select Experiment pulldown
+select.setPlaceholder('Select an experiment')
+select.style().set('stretch', 'horizontal')
+
+// Set up Autozoom checkbox
+var autoZoom = ui.Checkbox('Auto-zoom', null, null, null, {backgroundColor: 'rgba(255, 255, 255, 0)', fontSize: '10px'});
+autoZoom.setValue(1)
+
+// Set up panel
+panel.add(select).add(autoZoom);
+ui.root.clear();
+ui.root.add(Map.add(panel));
+
+// Configure map to have a Figure display option.
+var style = {
+  'Figure': [{
+      featureType: 'all',
+      stylers: [{ color: '#FFFFFF'}]
+  }]
+};
+
+var states_display = STATES
+    .filter(ee.Filter.inList('STUSPS', ['MA', 'CT', 'RI'])); 
+    
+var state_outlines = ee.Image().byte().paint({
+    featureCollection: states_display,
+    color: 1,
+    width: 1
+  });  
+
+
+var hotspot_bounds = geometry3.buffer(1000);
+var hotspot_outlines = ee.Image().byte().paint({
+    featureCollection: hotspot_bounds,
+    color: 'white',
+    width: 4
+  });
+  
+
+var site_bounds = geometry2.buffer(500);
+var site_outlines = ee.Image().byte().paint({
+    featureCollection: site_bounds,
+    color: 'white',
+    width: 4
+  });
+  
+var ma_bounds = ma_quabbin.geometry().bounds().buffer(1000);
+var ma_outline = ee.Image().byte().paint({
+    featureCollection: ma_bounds,
+    color: 'white',
+    width: 2
+  }); 
+  
+var ct_bounds = ct_burlap.geometry().bounds().buffer(1000);
+var ct_outline = ee.Image().byte().paint({
+    featureCollection: ct_bounds,
+    color: 'white',
+    width: 2
+  }); 
+
+var wrs_outline = ee.Image().byte().paint({
+    featureCollection: wrs2,
+    color: 'blue',
+    width: 2
+  }); 
+
+// Function to redraw "base" layers 
+function redraw() {
+
+  Map.addLayer(state_outlines, {palette: 'gray'}, 'State boundaries');
+  Map.addLayer(ct_burlap.draw({color: 'white', pointRadius: 1}), {}, 'CT plots', true);
+  Map.addLayer(ma_quabbin.draw({color: 'white', pointRadius: 1}), {}, 'MA plots', false);
+  Map.addLayer(hotspot_outlines, {palette: 'white'});
+  Map.addLayer(site_outlines, {palette: 'white'});
+  Map.addLayer(ma_outline, {palette: 'white'});
+  Map.addLayer(ct_outline, {palette: 'white'});
+
+  Map.setOptions(null, style);
+  Map.setOptions('SATELLITE');
+  
+  if (autoZoom.getValue() === true){
+    Map.centerObject(RESULTS_COLLECTION, 8)
+  }
+  
+  
+}
+
+// Initialize map
+Map.add(makeLegend(palette))
+redraw()

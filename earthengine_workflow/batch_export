@@ -1,0 +1,29 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var imageCollection = ee.ImageCollection("projects/sites-project/baselines_v6-3_by_path_monitoring_qa_final");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+var YEAR = 2017; 
+var experiment_list = imageCollection
+    .filterMetadata('monitor_year', 'equals', YEAR)
+    .aggregate_array('name')
+    .getInfo();
+print(experiment_list);
+
+for (var i=0; i<33; i++) {
+    var selected = imageCollection
+        .filterMetadata('monitor_year', 'equals', YEAR)
+        .filterMetadata('name', 'equals', experiment_list[i])
+        .first()
+        .toFloat();
+    
+    Export.image.toDrive({
+        image: selected,
+        description: experiment_list[i] + '_' + YEAR,
+        folder: 'ee-conditionassessment',
+        fileNamePrefix: 'result_' + experiment_list[i] + '_' + YEAR,
+        region: selected.geometry().bounds(),
+        crs: 'EPSG:5070',
+        scale: 30,
+        maxPixels: 1e13
+    });
+    
+}
