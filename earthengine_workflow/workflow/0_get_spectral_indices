@@ -8,7 +8,7 @@
 // | reproject is added/enabled in transforms function.
 
 
-var utils = require('users/valeriepasquarella/condition_monitoring_workflow_v1:utils.js');
+var utils = require('users/valeriepasquarella/harmonic_baseline_experiments:utils.js');
 
 // ---------------------------------- Configure ---------------------------------- 
 
@@ -27,15 +27,15 @@ var WHICH_SAMPLE = 1;
 
 if (WHICH_SAMPLE == 1) {
   // Harvard Forest / Quabbin hotspots
-  var SAMPLE = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/HF-GM/PlotDefHarvSimple')
+  var SAMPLE = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/field_data/quabbin_plots/PlotDefHarvSimple')
   var fileName = 'plots_ma_quabbin_' + YEAR + '_' + VERSION 
-}
+};
 
 if (WHICH_SAMPLE == 2) {
   // UConn / Burlap plots
-  var SAMPLE = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/CT-GM/FEN_BurlapSurvey_Coords')
+  var SAMPLE = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/ct_plots/FEN_BurlapSurvey_Coords')
   var fileName = 'plots_ct_burlap_' + YEAR + '_' + VERSION 
-}
+};
 
 // ---------------------------------- Functions ---------------------------------- 
 

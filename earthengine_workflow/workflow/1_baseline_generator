@@ -15,7 +15,7 @@ var wrs2 = ee.FeatureCollection("projects/google/wrs2_descending");
 // --------------------------------- Imports & Outputs --------------------------------- 
 
 var VERSION = '6-3';
-var utils = require('users/valeriepasquarella/condition_monitoring_workflow_v1:utils.js');
+var utils = require('users/valeriepasquarella/harmonic_baseline_experiments:utils.js');
 
 // Specify study area polygon(s)
 var ROI_FN = 'projects/ee-valeriepasquarella/assets/simplified_southernNE'

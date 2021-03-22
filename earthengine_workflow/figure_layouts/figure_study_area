@@ -70,21 +70,21 @@ var wrs2 = ee.FeatureCollection("projects/ee-valeriepasquarella/assets/wrs2_desc
     ee.Geometry.Point([-72.27394862734042, 42.345790825902576]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 // |
-// | Landsat Time Series Assessment -- Compare mapped results
+// | Harmonic Baselines Comparison -- Study area figure
 // | [valpasq@bu.edu], 2020
 // |
 // |
-// | This script loads mapped results for a specified year for comparison.
+// | This script used to create study area overview figures.
 
 
 // ------------------------------------- Imports  ------------------------------------- 
+var NLCD = ee.Image('USGS/NLCD/NLCD2011');
+var STATES = ee.FeatureCollection('TIGER/2018/States');
 
-var RESULTS_COLLECTION = ee.ImageCollection('projects/sites-project/baselines_v6-3_by_path_monitoring_qa_final')
-var ma_quabbin = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/HF-GM/PlotDefHarvSimple')
-var ct_burlap = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/CT-GM/FEN_BurlapSurvey_Coords')
-var study_area = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/simplified_southernNE')
-var NLCD = ee.Image('USGS/NLCD/NLCD2011')
-var STATES = ee.FeatureCollection('TIGER/2018/States')
+var RESULTS_COLLECTION = ee.ImageCollection('projects/sites-project/baselines_v6-3_by_path_monitoring_qa_final');
+var ma_quabbin = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/field_data/quabbin_plots/PlotDefHarvSimple');
+var ct_burlap = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/field_data/ct_plots/FEN_BurlapSurvey_Coords');
+var study_area = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/simplified_southernNE');
 
 var MIN_TCC = 75;
 
@@ -94,15 +94,7 @@ var tcc_mask = NLCD.select('percent_tree_cover')
   .gte(MIN_TCC)
   .reproject('EPSG:5070', null, 30);
 
-// Configure map to have a Figure display option.
-var style = {
-  'Figure': [{
-      featureType: 'all',
-      stylers: [{ color: '#FFFFFF'}]
-  }]
-};
-
-
+// Get study area states
 var states_display = STATES
     .filter(ee.Filter.inList('STUSPS', ['MA', 'CT', 'RI'])); 
 var state_outlines = ee.Image().byte().paint({
@@ -111,19 +103,7 @@ var state_outlines = ee.Image().byte().paint({
     width: 1
   });  
 
-
-var hotspot_bounds = geometry3.buffer(1000, null, 'EPSG:5070');
-var hotspot_outlines = ee.Image().byte().paint({
-    featureCollection: hotspot_bounds,
-    color: 'white',
-    width: 4
-  });
-  
-var hotspot_scale = ee.Image().byte().paint({
-    featureCollection: geometry6.buffer(1000, null, 'EPSG:5070'),
-    width: 1
-  }); 
-  
+// MA study bounds
 var ma_bounds = ma_quabbin.geometry().bounds().buffer(1000);
 var ma_outline = ee.Image().byte().paint({
     featureCollection: ma_bounds,
@@ -131,7 +111,28 @@ var ma_outline = ee.Image().byte().paint({
     width: 2
   }); 
   
-  
+// MA hotspots
+var hotspot_bounds = geometry3.buffer(1000, null, 'EPSG:5070');
+var hotspot_outlines = ee.Image().byte().paint({
+    featureCollection: hotspot_bounds,
+    color: 'white',
+    width: 4
+  });
+
+// MA hotspot scale reference
+var hotspot_scale = ee.Image().byte().paint({
+    featureCollection: geometry6.buffer(1000, null, 'EPSG:5070'),
+    width: 1
+  }); 
+
+// CT study bounds
+var ct_bounds = ct_burlap.geometry().bounds().buffer(1000);
+var ct_outline = ee.Image().byte().paint({
+    featureCollection: ct_bounds,
+    width: 2
+  }); 
+
+// CT site outlines
 var site_bounds = geometry2.buffer(500, null, 'EPSG:5070');
 var site_outlines = ee.Image().byte().paint({
     featureCollection: site_bounds,
@@ -139,17 +140,13 @@ var site_outlines = ee.Image().byte().paint({
     width: 4
   });
 
+// CT scale reference
 var site_scale = ee.Image().byte().paint({
     featureCollection: geometry5.buffer(125 / 2, null, 'EPSG:5070'),
     width: 1
   }); 
 
-var ct_bounds = ct_burlap.geometry().bounds().buffer(1000);
-var ct_outline = ee.Image().byte().paint({
-    featureCollection: ct_bounds,
-    width: 2
-  }); 
-
+// Landsat WRS-2 paths
 var path_12 = wrs2.filterBounds(geometry4).filterMetadata('PATH', 'equals', 12);
 var path_13 = wrs2.filterBounds(geometry4).filterMetadata('PATH', 'equals', 13);
 var wrs_outline_12 = ee.Image().byte().paint({
@@ -160,21 +157,40 @@ var wrs_outline_13 = ee.Image().byte().paint({
     featureCollection: path_13,
     width: 5
   }); 
+  
+  
+// ---------------------------------------------------
+// Add layers to Map:
 
-
+// Tree canopy cover mask
 Map.addLayer(tcc_mask, {palette: ['black', 'darkgreen']}, 'Tree canopy cover mask');
+
+// State outlines
 Map.addLayer(state_outlines, {palette: 'gray'}, 'State boundaries');
-Map.addLayer(ct_burlap.draw({color: 'white', pointRadius: 1}), {}, 'CT plots', true);
-Map.addLayer(ma_quabbin.draw({color: 'white', pointRadius: 1}), {}, 'MA plots', true);
-Map.addLayer(hotspot_outlines, {palette: 'white'}, 'MA hotspots');
-Map.addLayer(site_outlines, {palette: 'white'}, 'CT sites', false);
-Map.addLayer(ma_outline, {palette: 'white'}, 'MA study bounds');
+
+// CT sites
 Map.addLayer(ct_outline, {palette: 'white'}, 'CT study bounds');
-Map.addLayer(wrs_outline_13, {palette: '#6d9eeb'}, 'WRS 2 / Path 13');
-Map.addLayer(wrs_outline_12, {palette: '#8e7cc3'}, 'WRS 2 / Path 12');
+Map.addLayer(site_outlines, {palette: 'white'}, 'CT sites');
+Map.addLayer(ct_burlap.draw({color: 'white', pointRadius: 1}), {}, 'CT plots');
 Map.addLayer(site_scale, {palette: 'grey'}, 'CT site scale reference');
+
+// MA sites
+Map.addLayer(ma_outline, {palette: 'white'}, 'MA study bounds');
+Map.addLayer(hotspot_outlines, {palette: 'white'}, 'MA hotspots');
+Map.addLayer(ma_quabbin.draw({color: 'white', pointRadius: 1}), {}, 'MA plots');
 Map.addLayer(hotspot_scale, {palette: 'grey'}, 'MA hotspot scale reference');
 
+// Landsat scenes
+Map.addLayer(wrs_outline_13, {palette: '#6d9eeb'}, 'WRS 2 / Path 13');
+Map.addLayer(wrs_outline_12, {palette: '#8e7cc3'}, 'WRS 2 / Path 12');
+
+// Set Map options
+var style = {
+  'Figure': [{
+      featureType: 'all',
+      stylers: [{ color: '#FFFFFF'}]
+  }]
+};
 Map.setOptions(null, style);
-// Map.centerObject(states_display, 9);
-// Map.centerObject(ct_burlap, 11);
+Map.centerObject(states_display, 8);
+

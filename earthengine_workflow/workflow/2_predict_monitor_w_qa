@@ -10,7 +10,7 @@
 
 // ---------------------------------- Imports & Outputs ---------------------------------- 
 
-var utils = require('users/valeriepasquarella/condition_monitoring_workflow_v1:utils.js');
+var utils = require('users/valeriepasquarella/harmonic_baseline_experiments:utils.js');
 
 // Specify collection with experiments from 1_baseline_generator
 var BASELINES_COLLECTION = ee.ImageCollection('projects/sites-project/baselines_v6-3_by_path')
@@ -25,8 +25,6 @@ var DAY_START = '05-01' // Date to start monitoring
 var DAY_END = '09-30'   // Date to end monitoring
 
 var CC_THRESH = 50;     // maximum CLOUD_COVER_LAND 
-// var OBS_MIN = 50;       // exclude baseline models fit with less than minimum nobs
-
 
 // -------------------------------- Monitoring Setup -------------------------------- 
 
@@ -46,7 +44,7 @@ var num_paths = paths.size().getInfo();
 
 var min = -4;
 var max = 0;
-var palette = ['red', 'orange', 'yellow', 'blue']
+var palette = ['red', 'orange', 'yellow', 'blue'];
 var viz = {min: min, max: max, palette: palette};
 
 // ---------------------------------- Functions ---------------------------------- 
@@ -58,12 +56,12 @@ var spectralTransforms = function(img){
   var scaled = img.divide(10000);
 
   var dict = {
-    blue: scaled.select("blue"),
-    green: scaled.select("green"), 
-    red: scaled.select("red"),
-    nir: scaled.select("nir"),
-    swir1: scaled.select("swir1"),
-    swir2: scaled.select("swir2"),
+      blue: scaled.select("blue"),
+      green: scaled.select("green"), 
+      red: scaled.select("red"),
+      nir: scaled.select("nir"),
+      swir1: scaled.select("swir1"),
+      swir2: scaled.select("swir2")
   };
   
   var indexImg;
@@ -122,8 +120,7 @@ var getNames = function(base, list) {
 
 
 var addConstant = function(image) {
-  return image.addBands(ee.Image(1))
-    // .setDefaultProjection(baseline_crs);
+  return image.addBands(ee.Image(1));
 };
 
 
@@ -140,8 +137,8 @@ var addTime = function(image) {
 var addHarmonics = function(freqs) {
   return function(image) {
     // Make an image of frequencies.
-    var frequencies = ee.Image.constant(freqs)
-      // .setDefaultProjection(baseline_crs);
+    var frequencies = ee.Image.constant(freqs);
+
     // This band should represent time in radians.
     var time = ee.Image(image).select('t');
     // Get the cosine terms.
@@ -163,47 +160,46 @@ var monitorTS = function(clipBound, monitor_start, monitor_end) {
       .filterDate(monitor_start, monitor_end)  
       .filterBounds(clipBound) 
       .filterMetadata('CLOUD_COVER_LAND', "less_than", CC_THRESH)
-      .map(utils.preprocess457) 
+      .map(utils.preprocess457) ;
     
   // Get Landsat 7 imagery
   var collection7 = ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')
       .filterDate(monitor_start, monitor_end) 
       .filterBounds(clipBound) 
       .filterMetadata('CLOUD_COVER_LAND', "less_than", CC_THRESH)
-      .map(utils.preprocess457) 
+      .map(utils.preprocess457);
 
   // Get  Landsat 8 imagery
   var collection8 = ee.ImageCollection('LANDSAT/LC08/C01/T1_SR')
       .filterDate(monitor_start, monitor_end) 
       .filterBounds(clipBound) 
       .filterMetadata('CLOUD_COVER_LAND', "less_than", CC_THRESH)
-      .map(utils.preprocess8)  
+      .map(utils.preprocess8);  
 
   // FINAL LTS COLLECTION
   var collection = collection5.merge(collection7).merge(collection8)
       .map(function(image) {return image.set({
           'SENSING_TIME': ee.String(image.get('SENSING_TIME')).split('T').get(0), 
-          'WRS_PATH': image.get('WRS_PATH')})
+          'WRS_PATH': image.get('WRS_PATH')});
       })
       .map(utils.addCloudScore)
       .map(utils.maskCloudScore) 
       .map(spectralTransforms)
-      .sort('system:time_start') 
+      .sort('system:time_start'); 
       
   // ENDLAP FILTERING
-  var acquisitions = collection.aggregate_array('SENSING_TIME').distinct()
+  var acquisitions = collection.aggregate_array('SENSING_TIME').distinct();
   
   // Take mean for each acquisition date (Path)
   var monitorC = ee.ImageCollection.fromImages(acquisitions.map(function(d) {
-    var date = ee.Date(d)
-    var date2 = date.advance(24, 'hour')
-    var path = collection.filterDate(date, date2).first().get('WRS_PATH')
+    var date = ee.Date(d);
+    var date2 = date.advance(24, 'hour');
+    var path = collection.filterDate(date, date2).first().get('WRS_PATH');
     
     return collection.filterDate(date, date2).mean()
-      .set({
-        'system:time_start': date.millis(), 
-        'WRS_PATH': path
-      })
+        .set({
+          'system:time_start': date.millis(), 
+          'WRS_PATH': path});
   }));
   
   // Return image collection for monitoring period
@@ -217,58 +213,56 @@ var addPrediction = function(image) {
   var prediction = image.select(independents)
       .multiply(baseline.select(independents))
       .reduce('sum')
-      .rename('fitted')
-  var rmse = baseline.select('rmse').rename('rmse')
-  var nobs = baseline.select('nobs').rename('nobs')
-  var t = baseline.select('t').rename('trend')
+      .rename('fitted');
+  var rmse = baseline.select('rmse').rename('rmse');
+  var nobs = baseline.select('nobs').rename('nobs');
+  var t = baseline.select('t').rename('trend');
   return image.addBands(prediction)
-    .addBands(rmse).addBands(nobs).addBands(t);
-}
+      .addBands(rmse).addBands(nobs).addBands(t);
+};
 
 // Function to calculate scores
 var addScore = function(image) {
-  var observed = image.select(DEPENDENT)
-  var prediction = image.select('fitted')
+  var observed = image.select(DEPENDENT);
+  var prediction = image.select('fitted');
   var score = observed.subtract(prediction)
-      .divide(image.select('rmse'))
+      .divide(image.select('rmse'));
       
   return image.addBands(score.rename('score'));
-}
-
+};
 
 // --------------------------------- PREDICT ---------------------------------- 
 
 // Loop over experiments in baselines collection
 for(var experiment = 0; experiment < num_experiments; experiment++){
-// for(var experiment = 0; experiment < 1; experiment++){
-  var experiment_name = experiments.get(experiment)
+
+  var experiment_name = experiments.get(experiment);
   // print('Experiment:', experiment_name)
   
   var experiment_baselines = ee.ImageCollection(BASELINES_COLLECTION
-    .filterMetadata('name', 'equals', experiment_name))
+      .filterMetadata('name', 'equals', experiment_name));
   // print('Baseline collection:', experiment_baselines)
 
-  var VERSION = experiment_baselines.first().get('version').getInfo()
-  var DEPENDENT = experiment_baselines.first().get('spectral_band').getInfo()
-  var TS = experiment_baselines.first().get('time_series').getInfo()
-  var FREQ = experiment_baselines.first().get('harmonics').getInfo()
-  var YEAR_START = experiment_baselines.first().get('year_start').getInfo()
-  var YEAR_END = experiment_baselines.first().get('year_end').getInfo()
-  var REF_PERIOD = YEAR_START + '-' + YEAR_END
+  var VERSION = experiment_baselines.first().get('version').getInfo();
+  var DEPENDENT = experiment_baselines.first().get('spectral_band').getInfo();
+  var TS = experiment_baselines.first().get('time_series').getInfo();
+  var FREQ = experiment_baselines.first().get('harmonics').getInfo();
+  var YEAR_START = experiment_baselines.first().get('year_start').getInfo();
+  var YEAR_END = experiment_baselines.first().get('year_end').getInfo();
+  var REF_PERIOD = YEAR_START + '-' + YEAR_END;
   
-  var OUTPUT_NAME = OUTPUT_COLLECTION + DEPENDENT + '_' + REF_PERIOD + '_' + FREQ + '_' + TS + '_' + monitor_start + '_' + monitor_end
+  var OUTPUT_NAME = OUTPUT_COLLECTION + DEPENDENT + '_' + REF_PERIOD + '_' + 
+      FREQ + '_' + TS + '_' + monitor_start + '_' + monitor_end;
 
   // Get study area boundary
-  var clip_bound = experiment_baselines.geometry().bounds()
-  // Map.addLayer(clip_bound)
+  var clip_bound = experiment_baselines.geometry().bounds();
+  Map.addLayer(clip_bound);
   
   // get frequencies
   if (FREQ == 'h13') {
-    var harmonicFrequencies = ee.List([1,3]);
-    
+      var harmonicFrequencies = ee.List([1,3]);
   } else if (FREQ == 'h12') {
-    var harmonicFrequencies = ee.List([1,2]);
-  }
+      var harmonicFrequencies = ee.List([1,2])}
   
   // Construct lists of names for the harmonic terms.
   var cosNames = getNames('cos_', harmonicFrequencies);
@@ -276,38 +270,30 @@ for(var experiment = 0; experiment < num_experiments; experiment++){
   
   // Independent variables.
   var independents = ee.List(['constant', 't'])
-    .cat(cosNames).cat(sinNames);
+      .cat(cosNames).cat(sinNames);
   
   // Get monitoring period imagery
   var monitor = monitorTS(clip_bound, monitor_start, monitor_end);
-  // print('Full monitoring collection:', monitor)
-  
   
   for(var i = 0; i < num_paths; i++){
-    var path = paths.get(i).getInfo()
-    // print('Path:', path)
+    var path = paths.get(i).getInfo();
     
     var baseline = experiment_baselines
-      .filterMetadata('WRS_PATH', 'equals', path)
-      .first()
-      // .divide(10000)
-    // baseline = baseline.updateMask(baseline.select('nobs').gte(OBS_MIN))
-    // print(baseline.projection().crs())
+        .filterMetadata('WRS_PATH', 'equals', path)
+        .first();
 
-    var monitor_subset = monitor.filterMetadata('WRS_PATH', 'equals', path)
-    // print('Monitoring dates within Path:', monitor_subset)
+    var monitor_subset = monitor.filterMetadata('WRS_PATH', 'equals', path);
   
     // Add constant, time, and coefficients to monitoring collection.
     var harmonicLandsat = monitor_subset.select(DEPENDENT)
-      .map(addConstant)
-      .map(addTime)
-      .map(addHarmonics(harmonicFrequencies));
+        .map(addConstant)
+        .map(addTime)
+        .map(addHarmonics(harmonicFrequencies));
     
     // Add predictions and scores
     var collectPredictions = harmonicLandsat
-      .map(addPrediction)
-      .map(addScore);
-    // print('Collection of results for Path', collectPredictions)
+        .map(addPrediction)
+        .map(addScore);
     
     var mean = collectPredictions.select('score').reduce('mean');
     var stddev = collectPredictions.select('score').reduce('stdDev');
@@ -315,17 +301,17 @@ for(var experiment = 0; experiment < num_experiments; experiment++){
     
     // Dictionary for asset properties
     var outputProperties = ee.Dictionary({
-          'system:time_start': ee.Date(monitor_start).millis(),
-          'spectral_band': DEPENDENT,
-          'monitor_year': YEAR,
-          'monitor_start': monitor_start,
-          'monitor_end': monitor_end,
-          'run_version': VERSION,
-          'harmonics': FREQ,
-          'time_series': TS,
-          'ref_period': REF_PERIOD,
-          'name': experiment_name,
-          'WRS_PATH': path
+        'system:time_start': ee.Date(monitor_start).millis(),
+        'spectral_band': DEPENDENT,
+        'monitor_year': YEAR,
+        'monitor_start': monitor_start,
+        'monitor_end': monitor_end,
+        'run_version': VERSION,
+        'harmonics': FREQ,
+        'time_series': TS,
+        'ref_period': REF_PERIOD,
+        'name': experiment_name,
+        'WRS_PATH': path
       });
     
     // Average over monitoring period
@@ -334,8 +320,7 @@ for(var experiment = 0; experiment < num_experiments; experiment++){
         .addBands(baseline.select('rmse').rename('baseline_rmse'))
         .addBands(baseline.select('t').rename('baseline_t'))
         .clip(clip_bound)
-        .setMulti(outputProperties))
-    // print('Assessment:', assessment)
+        .setMulti(outputProperties));
     
     // var layer_name = 'Path ' + path
     // Map.addLayer(assessment.select('score_mean').updateMask(baseline.select('nobs').gte(50)), viz, layer_name)
@@ -343,14 +328,14 @@ for(var experiment = 0; experiment < num_experiments; experiment++){
     // Map.addLayer(assessment.select('baseline_rmse'), {min:-0.1, max:0.1}, layer_name)
     
     Export.image.toAsset({
-      image: assessment,
-      description: DEPENDENT + '_' + YEAR_START + '-' + YEAR_END + '_monitor-' + path,
-      assetId: OUTPUT_NAME + '_p' + path,
-      region: clip_bound,
-      crs: baseline.projection().crs(),
-      scale: 30,
-      maxPixels: 1e13,
-    })
+        image: assessment,
+        description: DEPENDENT + '_' + YEAR_START + '-' + YEAR_END + '_monitor-' + path,
+        assetId: OUTPUT_NAME + '_p' + path,
+        region: clip_bound,
+        crs: baseline.projection().crs(),
+        scale: 30,
+        maxPixels: 1e13,
+    });
 
   }
   

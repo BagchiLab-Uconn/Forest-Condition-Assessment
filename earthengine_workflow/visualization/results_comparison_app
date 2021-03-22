@@ -1,41 +1,33 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var wrs2 = ee.FeatureCollection("projects/ee-valeriepasquarella/assets/wrs2_descending"),
-    geometry = 
-    /* color: #d63000 */
-    /* shown: false */
-    ee.Geometry.MultiPoint(
-        [[-72.23501892402889, 41.807357153800126],
-         [-72.32660683603468, 41.887064648114055],
-         [-72.24467500916975, 42.428951297130176],
-         [-72.25194911282166, 42.43278961115788]]);
+var wrs2 = ee.FeatureCollection("projects/ee-valeriepasquarella/assets/wrs2_descending");
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 // |
-// | Landsat Time Series Assessment -- Compare mapped results
+// | Harmonic Baseline Experiments -- Comparison app
 // | [valpasq@bu.edu], 2020
 // |
 // |
-// | This script loads mapped results for a specified year for comparison.
+// | This app interactively displays mapped results.
 
 
 // ------------------------------------- Imports  ------------------------------------- 
+var NLCD = ee.Image('USGS/NLCD/NLCD2011');
+var STATES = ee.FeatureCollection('TIGER/2018/States');
 
-var RESULTS_COLLECTION = ee.ImageCollection('projects/sites-project/baselines_v6-3_by_path_monitoring_qa_final')
-var ma_quabbin = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/HF-GM/PlotDefHarvSimple')
-var ct_burlap = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/CT-GM/FEN_BurlapSurvey_Coords')
-var study_area = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/simplified_southernNE')
-var NLCD = ee.Image('USGS/NLCD/NLCD2011')
-var STATES = ee.FeatureCollection('TIGER/2018/States')
+var RESULTS_COLLECTION = ee.ImageCollection('projects/sites-project/baselines_v6-3_by_path_monitoring_qa_final');
+var ma_quabbin = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/field_data/quabbin_plots/PlotDefHarvSimple');
+var ct_burlap = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/field_data/ct_plots/FEN_BurlapSurvey_Coords');
+var study_area = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/simplified_southernNE');
 
 // ------------------------------------- Config ------------------------------------- 
 
-var YEAR = 2017
+var YEAR = 2017;
 var MIN_TCC = 75;
 
 // ---------------------------------- Visualization  ---------------------------------- 
 
 var min = -4;
 var max = 0;
-var palette = ['red', 'orange', 'yellow', 'blue']
+var palette = ['red', 'orange', 'yellow', 'blue'];
 var viz = {min: min, max: max, palette: palette};
 
 
@@ -101,25 +93,14 @@ function makeLegend(palette) {
 var tcc_mask = NLCD.select('percent_tree_cover')
   .clip(study_area)
   .gte(MIN_TCC)
-  .reproject('EPSG:5070', null, 30)
-
-// // Legacy results
-// var reanalysis_cn = 'reanalysis_score'
-// if (YEAR >= 2015 & YEAR <= 2018) {
-//   var reanalysis_fn = 'projects/ee-valeriepasquarella/assets/ForestCondition/' + YEAR + '_reanalysis_meanresiduals'
-//   var reanalysis = ee.Image(reanalysis_fn)
-//     .clip(study_area)
-//     .updateMask(tcc_mask)
-//     .rename(reanalysis_cn)
-//     .setMulti({'name':'reanalysis'})
-// } 
+  .reproject('EPSG:5070', null, 30);
 
 // Get results
-var selectedResults = RESULTS_COLLECTION.filterMetadata('monitor_year', 'equals', YEAR)
+var selectedResults = RESULTS_COLLECTION.filterMetadata('monitor_year', 'equals', YEAR);
 var names_list = selectedResults
     .aggregate_array('name')
     .distinct()
-    .getInfo()
+    .getInfo();
 
 // Select by experiment
 var select = ui.Select({
@@ -130,21 +111,21 @@ var select = ui.Select({
     select.style().set('stretch', 'horizontal');
     
     var assessment = ee.Image(RESULTS_COLLECTION.filterMetadata('name', 'equals', value).first())
-        .updateMask(tcc_mask)
+        .updateMask(tcc_mask);
     
-    map.addLayer(assessment.select('score_weighted_mean'), viz, value, true)
+    map.addLayer(assessment.select('score_weighted_mean'), viz, value, true);
     
-    redraw()
+    redraw();
     
 }});
 
 // Set up Select Experiment pulldown
-select.setPlaceholder('Select an experiment')
-select.style().set('stretch', 'horizontal')
+select.setPlaceholder('Select an experiment');
+select.style().set('stretch', 'horizontal');
 
 // Set up Autozoom checkbox
 var autoZoom = ui.Checkbox('Auto-zoom', null, null, null, {backgroundColor: 'rgba(255, 255, 255, 0)', fontSize: '10px'});
-autoZoom.setValue(1)
+autoZoom.setValue(1);
 
 // Set up panel
 panel.add(select).add(autoZoom);
@@ -159,7 +140,7 @@ var style = {
   }]
 };
 
-var states_display = STATES.filter(ee.Filter.inList('STUSPS', ['MA', 'CT', 'RI'])) 
+var states_display = STATES.filter(ee.Filter.inList('STUSPS', ['MA', 'CT', 'RI'])) ;
     
 var state_outlines = ee.Image().byte().paint({
     featureCollection: states_display,
@@ -171,21 +152,21 @@ var state_outlines = ee.Image().byte().paint({
 // Function to redraw "base" layers 
 function redraw() {
 
-  map.addLayer(state_outlines, {palette: 'gray'}, 'State boundaries')
-  map.addLayer(ct_burlap.draw({color: 'white', pointRadius: 1}), {}, 'CT plots', true)
-  map.addLayer(ma_quabbin.draw({color: 'white', pointRadius: 1}), {}, 'MA plots', true)
+  map.addLayer(state_outlines, {palette: 'gray'}, 'State boundaries');
+  map.addLayer(ct_burlap.draw({color: 'white', pointRadius: 1}), {}, 'CT plots', true);
+  map.addLayer(ma_quabbin.draw({color: 'white', pointRadius: 1}), {}, 'MA plots', true);
 
   map.setOptions(null, style);
   map.setOptions('SATELLITE');
   map.style().set({cursor:'crosshair'});
   
   if (autoZoom.getValue() === true){
-    map.centerObject(RESULTS_COLLECTION, 8)
+    map.centerObject(RESULTS_COLLECTION, 8);
   }
   
   
 }
 
 // Initialize map
-map.add(makeLegend(palette))
-redraw()
+map.add(makeLegend(palette));
+redraw();

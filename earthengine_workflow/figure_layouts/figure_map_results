@@ -54,32 +54,36 @@ var wrs2 = ee.FeatureCollection("projects/ee-valeriepasquarella/assets/wrs2_desc
          [-72.38512701852467, 42.38456936795803]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 // |
-// | Landsat Time Series Assessment -- Compare mapped results
+// | Harmonic Baseline Comparisons -- Mapped results figure
 // | [valpasq@bu.edu], 2020
 // |
 // |
-// | This script loads mapped results for a specified year for comparison.
+// | This script used to create mapped results figures.
 
 
 // ------------------------------------- Imports  ------------------------------------- 
+var NLCD = ee.Image('USGS/NLCD/NLCD2011');
+var STATES = ee.FeatureCollection('TIGER/2018/States');
 
-var RESULTS_COLLECTION = ee.ImageCollection('projects/sites-project/baselines_v6-3_by_path_monitoring_qa_final')
-var ma_quabbin = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/HF-GM/PlotDefHarvSimple')
-var ct_burlap = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/CT-GM/FEN_BurlapSurvey_Coords')
-var study_area = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/simplified_southernNE')
-var NLCD = ee.Image('USGS/NLCD/NLCD2011')
-var STATES = ee.FeatureCollection('TIGER/2018/States')
+var RESULTS_COLLECTION = ee.ImageCollection('projects/sites-project/baselines_v6-3_by_path_monitoring_qa_final');
+var ma_quabbin = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/field_data/quabbin_plots/PlotDefHarvSimple');
+var ct_burlap = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/field_data/ct_plots/FEN_BurlapSurvey_Coords');
+var study_area = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/simplified_southernNE');
 
 // ------------------------------------- Config ------------------------------------- 
 
-var YEAR = 2017
+var YEAR = 2017;
 var MIN_TCC = 75;
+
+var TOP_MODEL_DEFOLIATION = 'tcg_2005-2015_h13_full';
+var TOP_MODEL_LARVA = 'sr_2000-2010_h13_16d';
+var TOP_MODEL_EGG_MASSES = 'tcg_2000-2010_h12_full';
 
 // ---------------------------------- Visualization  ---------------------------------- 
 
 var min = -4;
 var max = 0;
-var palette = ['red', 'orange', 'yellow', 'blue']
+var palette = ['red', 'orange', 'yellow', 'blue'];
 var viz = {min: min, max: max, palette: palette};
 
 
@@ -140,6 +144,22 @@ function makeLegend(palette) {
   });
 }
 
+function add_result(model_name) {
+  var result = ee.Image(select_year
+      .filterMetadata('name', 'equals', model_name).first())
+      .updateMask(tcc_mask);
+  Map.addLayer(result.select('score_weighted_mean'), viz, model_name, true);
+}
+
+// State outlines
+var states_display = STATES
+    .filter(ee.Filter.inList('STUSPS', ['MA', 'CT', 'RI'])); 
+    
+var state_outlines = ee.Image().byte().paint({
+    featureCollection: states_display,
+    color: 1,
+    width: 1
+  });  
   
 // Mask based on Tree Canopy Cover
 var tcc_mask = NLCD.select('percent_tree_cover')
@@ -147,47 +167,69 @@ var tcc_mask = NLCD.select('percent_tree_cover')
   .gte(MIN_TCC)
   .reproject('EPSG:5070', null, 30);
 
+// Get study area states
+var states_display = STATES
+    .filter(ee.Filter.inList('STUSPS', ['MA', 'CT', 'RI'])); 
+var state_outlines = ee.Image().byte().paint({
+    featureCollection: states_display,
+    color: 1,
+    width: 1
+  });  
+
+// MA study bounds
+var ma_bounds = ma_quabbin.geometry().bounds().buffer(1000);
+var ma_outline = ee.Image().byte().paint({
+    featureCollection: ma_bounds,
+    color: 'white',
+    width: 2
+  }); 
+  
+// MA hotspots
+var hotspot_bounds = geometry3.buffer(1000, null, 'EPSG:5070');
+var hotspot_outlines = ee.Image().byte().paint({
+    featureCollection: hotspot_bounds,
+    color: 'white',
+    width: 4
+  });
+
+
+// CT study bounds
+var ct_bounds = ct_burlap.geometry().bounds().buffer(1000);
+var ct_outline = ee.Image().byte().paint({
+    featureCollection: ct_bounds,
+    width: 2
+  }); 
+
+// CT site outlines
+var site_bounds = geometry2.buffer(500, null, 'EPSG:5070');
+var site_outlines = ee.Image().byte().paint({
+    featureCollection: site_bounds,
+    color: 'white',
+    width: 4
+  });
+
 // Get results
-var selectedResults = RESULTS_COLLECTION
+var select_year = RESULTS_COLLECTION
     .filterMetadata('monitor_year', 'equals', YEAR);
-    
-var names_list = selectedResults
-    .aggregate_array('name')
-    .distinct()
-    .getInfo();
 
-// Select by experiment
-var select = ui.Select({
-  items: names_list,
-  onChange: function(value) {
-    Map.layers().reset();
+add_result(TOP_MODEL_EGG_MASSES);
+add_result(TOP_MODEL_LARVA);
+add_result(TOP_MODEL_DEFOLIATION);
 
-    select.style().set('stretch', 'horizontal');
-    
-    var assessment = ee.Image(RESULTS_COLLECTION.filterMetadata('name', 'equals', value).first())
-        .updateMask(tcc_mask);
-    
-    Map.addLayer(assessment.select('score_weighted_mean'), viz, value, true);
-    Map.addLayer(tcc_mask.not().selfMask(), {palette: 'black'});
-    // Map.addLayer(tcc_mask, {palette: ['black', 'darkgreen']});
-    
-    
-    redraw();
-    
-}});
+Map.addLayer(tcc_mask.not().selfMask(), {palette: 'black'}, 'TCC mask');
 
-// Set up Select Experiment pulldown
-select.setPlaceholder('Select an experiment')
-select.style().set('stretch', 'horizontal')
+Map.addLayer(state_outlines, {palette: 'gray'}, 'State boundaries');
 
-// Set up Autozoom checkbox
-var autoZoom = ui.Checkbox('Auto-zoom', null, null, null, {backgroundColor: 'rgba(255, 255, 255, 0)', fontSize: '10px'});
-autoZoom.setValue(1)
+Map.addLayer(ma_quabbin.draw({color: 'white', pointRadius: 1}), {}, 'MA plots');
+Map.addLayer(hotspot_outlines, {palette: 'white'}, 'MA hotpots');
+Map.addLayer(ma_outline, {palette: 'white'}, 'MA bounds');
 
-// Set up panel
-panel.add(select).add(autoZoom);
-ui.root.clear();
-ui.root.add(Map.add(panel));
+Map.addLayer(ct_burlap.draw({color: 'white', pointRadius: 1}), {}, 'CT plots');
+Map.addLayer(site_outlines, {palette: 'white'}, 'CT sites');
+Map.addLayer(ct_outline, {palette: 'white'}, 'CT bounds');
+
+// Add legend
+Map.add(makeLegend(palette));
 
 // Configure map to have a Figure display option.
 var style = {
@@ -197,72 +239,5 @@ var style = {
   }]
 };
 
-var states_display = STATES
-    .filter(ee.Filter.inList('STUSPS', ['MA', 'CT', 'RI'])); 
-    
-var state_outlines = ee.Image().byte().paint({
-    featureCollection: states_display,
-    color: 1,
-    width: 1
-  });  
-
-
-var hotspot_bounds = geometry3.buffer(1000);
-var hotspot_outlines = ee.Image().byte().paint({
-    featureCollection: hotspot_bounds,
-    color: 'white',
-    width: 4
-  });
-  
-
-var site_bounds = geometry2.buffer(500);
-var site_outlines = ee.Image().byte().paint({
-    featureCollection: site_bounds,
-    color: 'white',
-    width: 4
-  });
-  
-var ma_bounds = ma_quabbin.geometry().bounds().buffer(1000);
-var ma_outline = ee.Image().byte().paint({
-    featureCollection: ma_bounds,
-    color: 'white',
-    width: 2
-  }); 
-  
-var ct_bounds = ct_burlap.geometry().bounds().buffer(1000);
-var ct_outline = ee.Image().byte().paint({
-    featureCollection: ct_bounds,
-    color: 'white',
-    width: 2
-  }); 
-
-var wrs_outline = ee.Image().byte().paint({
-    featureCollection: wrs2,
-    color: 'blue',
-    width: 2
-  }); 
-
-// Function to redraw "base" layers 
-function redraw() {
-
-  Map.addLayer(state_outlines, {palette: 'gray'}, 'State boundaries');
-  Map.addLayer(ct_burlap.draw({color: 'white', pointRadius: 1}), {}, 'CT plots', true);
-  Map.addLayer(ma_quabbin.draw({color: 'white', pointRadius: 1}), {}, 'MA plots', false);
-  Map.addLayer(hotspot_outlines, {palette: 'white'});
-  Map.addLayer(site_outlines, {palette: 'white'});
-  Map.addLayer(ma_outline, {palette: 'white'});
-  Map.addLayer(ct_outline, {palette: 'white'});
-
-  Map.setOptions(null, style);
-  Map.setOptions('SATELLITE');
-  
-  if (autoZoom.getValue() === true){
-    Map.centerObject(RESULTS_COLLECTION, 8)
-  }
-  
-  
-}
-
-// Initialize map
-Map.add(makeLegend(palette))
-redraw()
+Map.setOptions(null, style);
+Map.centerObject(RESULTS_COLLECTION, 8)

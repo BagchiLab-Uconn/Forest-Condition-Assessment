@@ -1,0 +1,234 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var wrs2 = ee.FeatureCollection("projects/ee-valeriepasquarella/assets/wrs2_descending");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// |
+// | Harmonic Baseline Experiments -- Comparison app
+// | [valpasq@bu.edu], 2020
+// |
+// |
+// | This app interactively displays mapped results.
+
+
+// ------------------------------------- Imports  ------------------------------------- 
+var NLCD = ee.Image('USGS/NLCD/NLCD2011');
+var STATES = ee.FeatureCollection('TIGER/2018/States');
+
+var RESULTS_COLLECTION = ee.ImageCollection('projects/sites-project/baselines_v6-3_by_path_monitoring_qa_final');
+var ma_quabbin = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/field_data/quabbin_plots/PlotDefHarvSimple');
+var ct_burlap = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/field_data/ct_plots/FEN_BurlapSurvey_Coords');
+var study_area = ee.FeatureCollection('projects/ee-valeriepasquarella/assets/simplified_southernNE');
+
+// ------------------------------------- Config ------------------------------------- 
+
+var YEAR = 2017;
+var MIN_TCC = 75;
+
+// ---------------------------------- Visualization  ---------------------------------- 
+
+var min = -4;
+var max = 0;
+var palette = ['red', 'orange', 'yellow', 'blue'];
+var viz = {min: min, max: max, palette: palette};
+
+// App colors
+var COLORS = {
+    'transparent': 'rgba(255, 255, 255, 0)', 
+    'faded': 'rgba(255, 255, 255, 0.75)',
+    'dark': 'rgba(0, 0, 0, 0.75)'};
+    
+// Label style
+var label_style = {
+    fontFamily: 'sans-serif',
+    color: 'black',
+    backgroundColor: COLORS.transparent,
+    padding: '5px 0px 0px 0px'};
+
+// Set up UI Panel
+var map = ui.Map();
+var panel = ui.Panel({
+    style: {
+      width: '300px',
+      position: 'top-left',
+      backgroundColor: COLORS.faded
+    }
+  });
+  
+// Create colorbar for legend.
+function ColorBar(palette) {
+  return ui.Thumbnail({
+    image: ee.Image.pixelLonLat().select(0),
+    params: {
+      bbox: [0, 0, 1, 0.1],
+      dimensions: '100x10',
+      format: 'png',
+      min: 1,
+      max: 0,
+      palette: palette,
+    },
+    style: {stretch: 'horizontal', margin: '2px 2px'},
+  });
+}
+
+// Build legend
+function makeLegend(palette) {
+  var legendTitle = ui.Label({
+    value: 'Detected Change in Forest Condition',
+    style: {
+      fontWeight: 'bold',
+      fontSize: '14px',
+      margin: '0 0 2px 0',
+      padding: '0',
+      backgroundColor: COLORS.transparent
+    }
+    });
+    
+  var labelPanel = ui.Panel({
+      widgets: [
+        ui.Label('Normal', {margin: '0px 0px', backgroundColor: COLORS.transparent, fontSize: '12px'}),
+        ui.Label('Moderate', {margin: '0px 0px', textAlign: 'center', stretch: 'horizontal', backgroundColor: COLORS.transparent, fontSize: '12px'}),
+        ui.Label('Large', {margin: '0px 0px', backgroundColor: COLORS.transparent, fontSize: '12px'})
+      ],
+      layout: ui.Panel.Layout.flow('horizontal'),
+      style: { backgroundColor: COLORS.transparent}});
+  
+  return ui.Panel({
+    widgets: [legendTitle, ColorBar(palette), labelPanel],
+    style: {position: 'bottom-right',
+      backgroundColor: COLORS.faded
+    }
+  });
+}
+  
+// Function to make labels
+function label_factory(label) {
+  return ui.Label({
+    value: label,
+    style: label_style
+  });
+}
+
+// Function to make panels with multiple widgets
+function panel_factory(widget_list) {
+  return ui.Panel(
+        widget_list,
+        ui.Panel.Layout.Flow('horizontal'), {
+          stretch: 'horizontal',
+          backgroundColor: COLORS.transparent
+        });
+}
+
+function get_experiment() {
+    var assessment = ee.Image(RESULTS_COLLECTION
+        .filterMetadata('spectral_band', 'equals', select_spectral.getValue().toLowerCase())
+        .filterMetadata('harmonics', 'equals', select_harmonics.getValue())
+        .filterMetadata('ref_period', 'equals', select_ref.getValue())
+        .filterMetadata('time_series', 'equals', select_ts.getValue())
+        .first())
+        .updateMask(tcc_mask);
+    
+    var new_layer = ui.Map.Layer(assessment.select('score_weighted_mean'), viz, 'condition scores', true);
+    
+    map.layers().set(0, new_layer);
+    
+}
+
+var app_title = ui.Label({
+    value: 'Harmonic Baseline Experiments Results Viewer - 2017 Maps', 
+    style: {
+        margin: '4px', 
+        backgroundColor: COLORS.transparent, 
+        fontWeight: 'bold',
+        fontSize: '16px'}});
+        
+var panel_title = ui.Label({
+    value: 'Select experiment parameters:', 
+    style: {
+        margin: '4px', 
+        backgroundColor: COLORS.transparent, 
+        // fontWeight: 'bold',
+        fontSize: '14px'}});
+
+// Select spectral
+var label_spectral = label_factory('Spectral index');   
+var select_spectral = ui.Select({
+    items: ['TCG', 'EVI', 'SR', 'NDVI'],
+    value:'TCG',
+    style: {stretch: 'horizontal', width: '100px'},
+    onChange: get_experiment});
+
+// Select harmonics
+var label_harmonics= label_factory('Harmonic frequencies');  
+var select_harmonics = ui.Select({
+    items: ['h12', 'h13'],
+    value: 'h13',
+    style: {stretch: 'horizontal', width: '100px'},
+    onChange: get_experiment});
+
+// Select baseline for reference
+var label_ref = label_factory('Baseline reference');
+var select_ref = ui.Select({
+    items: ['2000-2010', '2005-2015'],
+    value: '2000-2010',
+    style: {stretch: 'horizontal', width: '100px'},
+    onChange: get_experiment});
+    
+// Select time series inputs
+var label_ts = label_factory('Time series inputs');  
+var select_ts = ui.Select({
+    items: ['full', '16d'],
+    value: 'full',
+    style: {stretch: 'horizontal', width: '100px'},
+    onChange: get_experiment});
+
+// Set up panel
+panel
+    .add(app_title)
+    .add(panel_title)
+    .add(panel_factory([select_spectral, label_spectral]))
+    .add(panel_factory([select_harmonics, label_harmonics]))
+    .add(panel_factory([select_ref, label_ref]))
+    .add(panel_factory([select_ts, label_ts]));
+ui.root.clear();
+ui.root.add(map.add(panel));
+
+
+
+// Mask based on Tree Canopy Cover
+var tcc_mask = NLCD.select('percent_tree_cover')
+  .clip(study_area)
+  .gte(MIN_TCC)
+  .reproject('EPSG:5070', null, 30);
+
+
+
+var states_display = STATES.filter(ee.Filter.inList('STUSPS', ['MA', 'CT', 'RI'])) ;
+    
+var state_outlines = ee.Image().byte().paint({
+    featureCollection: states_display,
+    color: 1,
+    width: 1
+  });  
+
+    
+get_experiment();
+
+map.addLayer(state_outlines, {palette: 'gray'}, 'state boundaries');
+map.addLayer(ct_burlap.draw({color: 'white', pointRadius: 1}), {}, 'CT plots', true);
+map.addLayer(ma_quabbin.draw({color: 'white', pointRadius: 1}), {}, 'MA plots', true);
+
+map.add(makeLegend(palette));
+
+// Configure map to have a Figure display option.
+var style = {
+  'Figure': [{
+      featureType: 'all',
+      stylers: [{ color: '#000000'}]
+  }]
+};
+
+map.setOptions(null, style);
+map.setOptions('SATELLITE');
+map.style().set({cursor:'crosshair'});
+
+map.centerObject(RESULTS_COLLECTION, 8);
+  
