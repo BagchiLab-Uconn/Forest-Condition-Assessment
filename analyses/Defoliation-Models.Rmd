@@ -565,16 +565,18 @@ quabbin.top.pred <- QuabModBeta[['m_tcg_2005_2015_h13_full']] %>%
     
     # Plot defoliation score against model fitted values of ground defoliation
     ggplot(aes(x = m_tcg_2005_2015_h13_full, y = .fitted)) +
-      
+  
+        
+        # Add fitted data values as scatterplot
+        geom_point(alpha = 0.9) +
+        
+        # Add errorbars to the fitted values equal to the residuals
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid), 
+            alpha = 0.5) +
+  
         # Add model prediction trend line and 95% confidence intervals
         geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, 
             alpha = 0.15, stat = "identity", data = quabbin.top) +
-        
-        # Add fitted data values as scatterplot
-        geom_point() +
-        
-        # Add errorbars to the fitted values equal to the residuals
-        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
         
         # Add axis labels
         labs(x = "Defoliation Score", y = "Fitted Ground Defoliation", 
@@ -1101,16 +1103,17 @@ burlap.top.pred <- burlapmodels[['m_ndvi_2000_2010_h13_16d']] %>%
     
     # Plot defoliation against model fitted values of abundance
     ggplot(aes(x = m_ndvi_2000_2010_h13_16d, y = .fitted, color = Year)) +
-      
+        
+        # Add fitted data values as scatterplot
+        geom_point(alpha = 0.9) +
+        
+        # Add errorbars to the fitted values equal to the residuals
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid, 
+            alpha = 0.5)) +
+  
         # Add model prediction trend line and 95% confidence intervals
         geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, 
             alpha = 0.15, stat = "identity", data = burlap.top) +
-        
-        # Add fitted data values as scatterplot
-        geom_point() +
-        
-        # Add errorbars to the fitted values equal to the residuals
-        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
         
         # Custom colors
         scale_color_manual(values = c("black", "blue")) + 
@@ -1203,16 +1206,18 @@ burlap.consensus.pred <- burlapmodels[['m_reanalysis']] %>%
     
     # Plot defoliation against model fitted values of abundance
     ggplot(aes(x = m_reanalysis, y = .fitted, color = Year)) +
-      
-        # Add model prediction trend line and 95% confidence intervals
-        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
-            stat = "identity", data = burlap.consensus) +
+    
         
         # Add fitted data values as scatterplot
-        geom_point() +
+        geom_point(alpha = 0.9) +
         
         # Add errorbars to the fitted values equal to the residuals
-        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid), 
+            alpha = 0.5) +
+  
+        # Add model prediction trend line and 95% confidence intervals
+        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, 
+            alpha = 0.15, stat = "identity", data = burlap.consensus) +
         
         # Custom colors
         scale_color_manual(values = c("black", "blue")) + 
@@ -1306,16 +1311,16 @@ burlap.top.pred.17 <- burlapmodels17[['m_sr_2000_2010_h13_16d']] %>%
     
     # Plot defoliation against model fitted values of abundance
     ggplot(aes(x = m_sr_2000_2010_h13_16d, y = .fitted)) +
-      
+        
+        # Add fitted data values as scatterplot
+        geom_point(alpha = 0.9) +
+        
+        # Add errorbars to the fitted values equal to the residuals
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid), alpha = 0.5) +
+  
         # Add model prediction trend line and 95% confidence intervals
         geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, 
             alpha = 0.15, stat = "identity", data = burlap.top.17) +
-        
-        # Add fitted data values as scatterplot
-        geom_point() +
-        
-        # Add errorbars to the fitted values equal to the residuals
-        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
         
         # Add axis labels
         labs(x = "Defoliation Score", y = "Fitted Larval Abundance", 
@@ -1751,16 +1756,17 @@ egg.top.pred <- eggmodels[['m_sr_2000_2010_h13_16d']] %>%
     
     # Plot defoliation against model fitted values of abundance
     ggplot(aes(x = m_sr_2000_2010_h13_16d, y = .fitted, color = Year)) +
-      
+        
+        # Add fitted data values as scatterplot
+        geom_point(alpha = 0.9) +
+        
+        # Add errorbars to the fitted values equal to the residuals
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid), 
+          alpha = 0.5) +
+  
         # Add model prediction trend line and 95% confidence intervals
         geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, 
             alpha = 0.15, stat = "identity", data = egg.top) +
-        
-        # Add fitted data values as scatterplot
-        geom_point() +
-        
-        # Add errorbars to the fitted values equal to the residuals
-        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
         
         # Custom colors
         scale_color_manual(values = c("black", "blue")) + 
@@ -1855,16 +1861,17 @@ egg.top.pred.17 <- eggmodels17[['m_tcg_2000_2010_h12_full']] %>%
     
     # Plot defoliation against model fitted values of abundance
     ggplot(aes(x = m_tcg_2000_2010_h12_full, y = .fitted)) +
-      
+        
+        # Add fitted data values as scatterplot
+        geom_point(alpha = 0.9) +
+        
+        # Add errorbars to the fitted values equal to the residuals
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid),
+            alpha = 0.5) +
+  
         # Add model prediction trend line and 95% confidence intervals
         geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, 
             alpha = 0.15, stat = "identity", data = egg.top.17) +
-        
-        # Add fitted data values as scatterplot
-        geom_point() +
-        
-        # Add errorbars to the fitted values equal to the residuals
-        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
         
         # Add axis labels
         labs(x = "Defoliation Score", y = "Fitted Egg Masses", 
@@ -2106,16 +2113,17 @@ egg.predictor.pred <- m_egg.pred %>%
     
     # Plot defoliation against model fitted values of abundance
     ggplot(aes(x = EggMasses, y = .fitted, color = Year)) +
-      
-        # Add model prediction trend line and 95% confidence intervals
-        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
-            stat = "identity", data = egg.predictor) +
         
         # Add fitted data values as scatterplot
-        geom_point() +
+        geom_point(alpha = 0.9) +
         
         # Add errorbars to the fitted values equal to the residuals
-        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid),
+            alpha = 0.5) +
+  
+        # Add model prediction trend line and 95% confidence intervals
+        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, 
+            alpha = 0.15, stat = "identity", data = egg.predictor) +
         
         # Custom colors
         scale_color_manual(values = c("black", "blue")) + 
@@ -2207,16 +2215,17 @@ egg.predictor.pred.17 <- m_egg.pred.17 %>%
     
     # Plot defoliation against model fitted values of abundance
     ggplot(aes(x = EggMasses, y = .fitted)) +
-      
-        # Add model prediction trend line and 95% confidence intervals
-        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, alpha = 0.15, 
-            stat = "identity", data = egg.predictor.17) +
         
         # Add fitted data values as scatterplot
-        geom_point() +
+        geom_point(alpha = 0.9) +
         
         # Add errorbars to the fitted values equal to the residuals
-        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid)) +
+        geom_errorbar(aes(ymin = .fitted - .resid, ymax = .fitted + .resid),
+            alpha = 0.5) +
+  
+        # Add model prediction trend line and 95% confidence intervals
+        geom_smooth(aes(y = fit, ymin = lower, ymax = upper), size = 1.5, 
+            alpha = 0.15, stat = "identity", data = egg.predictor.17) +
         
         # Add axis labels
         labs(x = "Egg Masses", y = "Fitted Larval Abundance", 
