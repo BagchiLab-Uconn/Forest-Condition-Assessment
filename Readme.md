@@ -1,5 +1,5 @@
 # Forest Condition Assessment
-An accompanying code and data repository for the paper *Assessing a Landsat-based harmonic modeling approach for forest condition monitoring using defoliator abundance and defoliation measurements*. 
+An accompanying code and data repository for the paper Pasquarella, V.J., Mickley, J.G., Barker Plotkin, A., MacLean, R. G., Anderson, R. M., Brown, L. M., Wagner, D. L., Singer, M. S., &amp; Bagchi, R. (2021). Predicting defoliator abundance and defoliation measurements using Landsat-based condition scores. *Remote Sensing in Ecology and Conservation*. [https://doi.org/10.1002/rse2.211](https://doi.org/10.1002/rse2.211)
 
 Here, we compare the relative predictive ability of various parameterizations of remote-sensed forest condition assessments on abundance and damage from a *Lymantria dispar* outbreak in southern New England. 
 
@@ -15,5 +15,5 @@ Here, we compare the relative predictive ability of various parameterizations of
 
 #### Harmonic baseline results:
 * Results can be viewed interactively via an [Earth Engine App](https://valeriepasquarella.users.earthengine.app/view/harmonic-baseline-experiments)
-* Mapped results are available as a [Zenodo dataset](http://doi.org/10.5281/zenodo.4567382)
+* Mapped results are available as a [Zenodo dataset](https://doi.org/10.5281/zenodo.4825877)
 
