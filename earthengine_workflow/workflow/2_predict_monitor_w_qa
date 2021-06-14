@@ -13,18 +13,18 @@
 var utils = require('users/valeriepasquarella/harmonic_baseline_experiments:utils.js');
 
 // Specify collection with experiments from 1_baseline_generator
-var BASELINES_COLLECTION = ee.ImageCollection('projects/sites-project/baselines_v6-3_by_path')
+var BASELINES_COLLECTION = ee.ImageCollection('projects/sites-project/baselines_v6-3_by_path');
 
 // Specify collection for saving monitoring results (created using Assets Manager)
-var OUTPUT_COLLECTION = 'projects/sites-project/baselines_v6-3_by_path_monitoring_qa/'
+var OUTPUT_COLLECTION = 'projects/sites-project/baselines_v6-3_by_path_monitoring_qa/';
 
 // -------------------------------- Monitoring Parameters --------------------------------- 
 
-var YEAR = 2017         // Monitoring year
-var DAY_START = '05-01' // Date to start monitoring
-var DAY_END = '09-30'   // Date to end monitoring
+var YEAR = 2017;         // Monitoring year
+var DAY_START = '05-01'; // Date to start monitoring
+var DAY_END = '09-30';   // Date to end monitoring
 
-var CC_THRESH = 50;     // maximum CLOUD_COVER_LAND 
+var CC_THRESH = 50;      // maximum CLOUD_COVER_LAND 
 
 // -------------------------------- Monitoring Setup -------------------------------- 
 
@@ -36,7 +36,7 @@ var experiments = BASELINES_COLLECTION.aggregate_array('name').distinct();
 var num_experiments = experiments.size().getInfo();
 
 // Get WRS2 paths
-var paths = BASELINES_COLLECTION.aggregate_array('WRS_PATH').distinct()
+var paths = BASELINES_COLLECTION.aggregate_array('WRS_PATH').distinct();
 var num_paths = paths.size().getInfo();
 
 // -------------------------------- Visualization -------------------------------- 
@@ -109,7 +109,7 @@ var spectralTransforms = function(img){
 
   return indexImg//.reproject(baseline_crs, null, output_resolution)
     .copyProperties(img, ["system:time_start", "WRS_PATH", "WRS_ROW", "SENSING_TIME"]);
-}
+};
 
 
 var getNames = function(base, list) {

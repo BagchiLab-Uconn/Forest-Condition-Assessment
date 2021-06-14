@@ -1,29 +1,96 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
 var imageCollection = ee.ImageCollection("projects/sites-project/baselines_v6-3_by_path_monitoring_qa_final");
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-var YEAR = 2017; 
+var YEAR = 2018; 
+
+var MASK_TCC = false;
+var MIN_TCC = 75;
+
+var MASK_GSW = true;
+var WATER_THRESH = 50;
+
 var experiment_list = imageCollection
     .filterMetadata('monitor_year', 'equals', YEAR)
     .aggregate_array('name')
     .getInfo();
 print(experiment_list);
 
-for (var i=0; i<33; i++) {
+// Mask based on Tree Canopy Cover
+var NLCD = ee.Image('USGS/NLCD/NLCD2016');
+var tcc_mask = NLCD.select('percent_tree_cover')
+  .clip(imageCollection.first().geometry())
+  .gte(MIN_TCC)
+  .reproject('EPSG:5070', null, 30);
+  
+  
+// GSW masking
+var GSW = ee.Image("JRC/GSW1_2/GlobalSurfaceWater");
+var gsw_mask = GSW.select('occurrence')
+    .gte(WATER_THRESH)
+    .unmask();  
+
+for (var i=0; i<32; i++) {
     var selected = imageCollection
         .filterMetadata('monitor_year', 'equals', YEAR)
         .filterMetadata('name', 'equals', experiment_list[i])
         .first()
         .toFloat();
     
+    if (MASK_TCC === true) {
+      selected = selected.updateMask(tcc_mask)
+          .unmask(-9999);
+      var filename = 'result_' + experiment_list[i] + '_' + YEAR + '_masked-tcc';
+    } else if (MASK_GSW === true) {
+      selected = selected.updateMask(gsw_mask.eq(0))
+          .unmask(-9999);
+      var filename = 'result_' + experiment_list[i] + '_' + YEAR + '_masked-gsw';
+    } else {
+      var filename = 'result_' + experiment_list[i] + '_' + YEAR;
+    }
+    
+    Map.addLayer(selected);
+    
     Export.image.toDrive({
         image: selected,
         description: experiment_list[i] + '_' + YEAR,
         folder: 'ee-conditionassessment',
-        fileNamePrefix: 'result_' + experiment_list[i] + '_' + YEAR,
+        fileNamePrefix: filename,
         region: selected.geometry().bounds(),
         crs: 'EPSG:5070',
         scale: 30,
-        maxPixels: 1e13
+        maxPixels: 1e13,
+        fileDimensions: 32000
     });
     
 }
+
+if (YEAR >= 2015 & YEAR <= 2018) {
+  var reanalysis_fn = 'projects/ee-valeriepasquarella/assets/ForestCondition/' + YEAR + '_reanalysis_meanresiduals';
+  var reanalysis = ee.Image(reanalysis_fn).reproject('EPSG:5070').rename('reanalysis_score');
+  
+  if (MASK_TCC === true) {
+    reanalysis = reanalysis.updateMask(tcc_mask)
+        .unmask(-9999);
+    var filename = 'result_reanalysis_' + YEAR + '_masked-tcc';
+  } else if (MASK_GSW === true) {
+    reanalysis = reanalysis.updateMask(gsw_mask.eq(0))
+        .unmask(-9999);
+    var filename ='result_reanalysis_' + YEAR + '_masked-gsw';
+  } else {
+    var filename = 'result_reanalysis_' + YEAR;
+  }
+  
+  Export.image.toDrive({
+    image: reanalysis,
+    description: 'reanalysis_' + YEAR,
+    folder: 'ee-conditionassessment',
+    fileNamePrefix: filename,
+    region: selected.geometry().bounds(),
+    crs: 'EPSG:5070',
+    scale: 30,
+    maxPixels: 1e13,
+    fileDimensions: 32000
+});
+  
+}
+
